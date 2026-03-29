@@ -18,11 +18,9 @@
 
 const CFBD_BASE_URL = 'https://api.collegefootballdata.com';
 
-// TODO: add CFBD API key
-// Replace the empty string with your key before making live requests.
-// Never commit a real key here — load from an environment variable
-// or a local config file that is excluded from version control.
-const CFBD_API_KEY = 'REDACTED_API_KEY';
+// API key is loaded from config.js (excluded from version control).
+// Copy config.js from the repo root, add your real key, and never commit it.
+const CFBD_API_KEY = CFBD_CONFIG.apiKey;
 
 /* ----------------------------------------------------------
    cfbdFetch
