@@ -1,0 +1,64 @@
+/* =============================================================
+   variables.css — FieldIQ Design Tokens
+   All CSS custom properties live here. No hardcoded values
+   should appear anywhere else in the stylesheet.
+   ============================================================= */
+
+:root {
+
+  /* ----------------------------------------------------------
+     School Theming
+     These three vars are swapped at runtime by theme.js when
+     the user navigates to a school page.
+     ---------------------------------------------------------- */
+  --school-primary:   #BF5700;  /* Default: Texas burnt orange */
+  --school-secondary: #FFFFFF;  /* Default: white */
+  --school-accent:    #FF8C42;  /* Derived: lightened primary (~20%) */
+
+  /* ----------------------------------------------------------
+     Background Surfaces
+     Dark layered palette — deepest at base, lighter as surfaces
+     stack upward.
+     ---------------------------------------------------------- */
+  --bg-base:    #080a0f;  /* Page background */
+  --bg-surface: #0d0f18;  /* Sidebar, modals, elevated panels */
+  --bg-card:    #0a0c14;  /* Cards, stat boxes */
+
+  /* ----------------------------------------------------------
+     Borders
+     ---------------------------------------------------------- */
+  --border-color: #1a1d2e;
+
+  /* ----------------------------------------------------------
+     Typography Colors
+     ---------------------------------------------------------- */
+  --text-primary:   #ffffff;  /* Headlines, labels */
+  --text-secondary: #3a4060;  /* Supporting text */
+  --text-muted:     #2a3050;  /* Placeholders, disabled states */
+
+  /* ----------------------------------------------------------
+     Font Families
+     Loaded via @import in base.css.
+     ---------------------------------------------------------- */
+  --font-display: 'Bebas Neue', sans-serif;    /* Big headers, scores */
+  --font-serif:   'Playfair Display', serif;   /* Feature text, pull quotes */
+  --font-body:    'Barlow', sans-serif;         /* Body copy, descriptions */
+  --font-ui:      'Oswald', sans-serif;         /* Nav, labels, stat values */
+
+  /* ----------------------------------------------------------
+     Radii
+     ---------------------------------------------------------- */
+  --radius-card: 10px;  /* Cards, panels */
+  --radius-pill: 20px;  /* Chips, badges, tags */
+
+  /* ----------------------------------------------------------
+     Layout Dimensions
+     ---------------------------------------------------------- */
+  --sidebar-width:  220px;
+  --topbar-height:  52px;
+
+  /* ----------------------------------------------------------
+     Transitions
+     ---------------------------------------------------------- */
+  --transition: all 0.2s ease;
+}

@@ -1,0 +1,116 @@
+/* =============================================================
+   base.css — FieldIQ Global Reset & Defaults
+   Depends on: variables.css (must load first)
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   Google Fonts
+   Bebas Neue  — display/headlines
+   Playfair Display — serif feature text
+   Barlow      — body copy
+   Oswald      — UI labels, nav, stat values
+   ---------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Barlow:wght@300;400;500;600&family=Oswald:wght@300;400;500;600&display=swap');
+
+/* ----------------------------------------------------------
+   Box Model Reset
+   Apply border-box globally so padding never blows out widths.
+   ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------
+   Root / Body Defaults
+   ---------------------------------------------------------- */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------------------------
+   Typography Resets
+   ---------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 400;  /* Bebas Neue is single-weight; 400 is correct */
+  line-height: 1.1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ----------------------------------------------------------
+   Text Selection
+   Use school-primary so the highlight color shifts per school.
+   ---------------------------------------------------------- */
+::selection {
+  background-color: var(--school-primary);
+  color: var(--school-secondary);
+}
+
+/* ----------------------------------------------------------
+   Scrollbar Styling (Webkit)
+   Thin, dark scrollbar that matches the surface palette.
+   ---------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-base);
+}

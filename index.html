@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FieldIQ — College Football Data & Analytics" />
+  <title>FieldIQ</title>
+
+  <!-- --------------------------------------------------------
+    CSS Load Order
+    1. variables  — design tokens (must be first, everything depends on it)
+    2. base       — reset, body defaults, fonts
+    3. layout     — app shell, sidebar, topbar, page-content
+    4. components — reusable UI pieces (cards, nav, chips, etc.)
+  --------------------------------------------------------- -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+
+  <!-- ========================================================
+    #app — Single mount point. All content is rendered here
+    by the JS router. Nothing outside this div should change.
+  ======================================================== -->
+  <div id="app">
+
+    <div class="app-shell">
+
+      <!-- --------------------------------------------------
+        Sidebar
+        Contains the app logo/wordmark at the top, followed
+        by the main navigation list. Nav items are populated
+        by app.js at init time.
+      --------------------------------------------------- -->
+      <aside class="sidebar" id="sidebar">
+
+        <!-- Logo / Wordmark area -->
+        <div class="sidebar-logo" id="sidebar-logo">
+          <span class="sidebar-logo-text">FieldIQ</span>
+        </div>
+
+        <!-- Primary navigation -->
+        <nav class="sidebar-nav" id="sidebar-nav" aria-label="Main navigation">
+          <!-- Nav items injected by app.js -->
+        </nav>
+
+      </aside>
+      <!-- /sidebar -->
+
+      <!-- --------------------------------------------------
+        Main Content
+        Flex column: topbar (fixed height) stacked above the
+        scrollable page-content region.
+      --------------------------------------------------- -->
+      <div class="main-content" id="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar" id="topbar">
+          <!-- Breadcrumb / page title injected by router.js -->
+          <span class="topbar-title" id="topbar-title"></span>
+        </header>
+
+        <!-- Page Content — router renders page views here -->
+        <main class="page-content" id="page-content">
+          <!-- Page views rendered by router.js -->
+        </main>
+
+      </div>
+      <!-- /main-content -->
+
+    </div>
+    <!-- /app-shell -->
+
+  </div>
+  <!-- /#app -->
+
+  <!-- --------------------------------------------------------
+    JS Load Order
+    1. theme    — applyTheme() must be available before app init
+    2. api      — cfbdFetch() used by page modules
+    3. router   — navigate() used by app.js and page modules
+    4. home     — page module, must exist before router runs
+    5. school   — page module, must exist before router runs
+    6. app      — entry point, runs last after all deps are ready
+  --------------------------------------------------------- -->
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/router.js"></script>
+  <script src="pages/home.js"></script>
+  <script src="pages/school.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "teams": [
+    {
+      "id": "texas",
+      "name": "Texas Longhorns",
+      "abbreviation": "TEX",
+      "city": "Austin",
+      "state": "TX",
+      "conference": "SEC",
+      "primaryColor": "#BF5700",
+      "secondaryColor": "#FFFFFF",
+      "mascot": "Longhorns",
+      "stadium": "Darrell K Royal Memorial Stadium",
+      "founded": 1883,
+      "enrollment": 51032
+    }
+  ]
+}
