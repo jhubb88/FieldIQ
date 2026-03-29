@@ -14,7 +14,11 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--bg-base);
+  /* No background here — sidebar and topbar have their own.
+     Removing this allows the fixed mosaic to show through
+     the transparent page-content on the home route. */
+  position: relative;
+  z-index: 10;
 }
 
 /* ----------------------------------------------------------

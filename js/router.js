@@ -62,6 +62,14 @@ function renderCurrentRoute() {
     resetTheme();
   }
 
+  // Unmount previous page if it has cleanup to do (e.g. mosaic teardown)
+  if (page !== 'home' && typeof HomePage.unmount === 'function') {
+    HomePage.unmount();
+  }
+
+  // Toggle body class so CSS can adapt per route (e.g. transparent bg on home)
+  document.body.classList.toggle('is-home', page === 'home');
+
   const routeFn = ROUTES[page] || ROUTES['home'];
   pageContent.innerHTML = routeFn(params);
 

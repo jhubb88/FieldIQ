@@ -24,6 +24,10 @@
     #app — Single mount point. All content is rendered here
     by the JS router. Nothing outside this div should change.
   ======================================================== -->
+  <!-- Mosaic background — lives outside app-shell so it sits behind
+       the entire viewport without being clipped by overflow:hidden -->
+  <div id="mosaic-root"></div>
+
   <div id="app">
 
     <div class="app-shell">
