@@ -803,7 +803,10 @@ const SchoolPage = {
 
   /* ----------------------------------------------------------
      loadData
-     Fires all fetch calls concurrently via Promise.allSettled.
+     Fires all fetch calls concurrently via Promise.allSettled,
+     unwraps results, then delegates rendering to two helpers:
+       _loadOverviewData  — hero, DNA, snapshot, game cards, identity
+       _loadAnalyticsData — Game Control, Volatility (Phase 6+)
      A failed fetch never crashes the page — each section falls
      back to a safe empty value and updates independently.
      ---------------------------------------------------------- */
@@ -827,55 +830,79 @@ const SchoolPage = {
     const completed = _completedGames(games);
     const hasGames  = completed.length > 0;
 
-    /* --- Hero meta band --- */
-    const conf     = teamInfo ? (teamInfo.conference || TEXAS_STATIC.conference) : TEXAS_STATIC.conference;
-    const snapshot = hasGames ? _deriveSnapshotData(SCHOOL_NAME, completed, rank) : null;
-
-    const heroConf   = document.getElementById('school-hero-conf');
-    const heroRecord = document.getElementById('school-hero-record');
-    if (heroConf)   heroConf.textContent   = `${conf} \u00b7 ${SCHOOL_YEAR}`;
-    if (heroRecord) heroRecord.textContent = snapshot ? snapshot.record : '\u2014';
-
-    /* --- Program DNA --- */
-    const { labels, note } = computeDNA(SCHOOL_NAME, games, lines);
-    setSection('school-dna', renderDNACard(labels, note));
-
-    /* --- Season Snapshot --- */
-    setSection('school-snapshot', hasGames
-      ? renderSnapshotRow(snapshot)
-      : errorHTML('Could not load game data.'));
-
-    /* --- Last Game / Next Game --- */
-    setSection('school-game-cards', hasGames
-      ? renderGameCards(
-          _deriveLastGame(SCHOOL_NAME, completed, lines),
-          _deriveNextGame(SCHOOL_NAME, games,     lines)
-        )
-      : errorHTML('Could not load game data.'));
-
-    /* --- School Identity --- */
-    setSection('school-identity', renderIdentityCard(_deriveIdentity(teamInfo, coachInfo)));
-
-    /* --- Game Control + Volatility (Phase 6) --- */
-    if (hasGames) {
-      /* Run all compute functions against the completed games array */
-      const blowout     = computeBlowoutProfile(completed, SCHOOL_NAME);
-      const halfScore   = computeHalfScoring(completed, SCHOOL_NAME);
-      const closeGame   = computeCloseGameRecord(completed, SCHOOL_NAME);
-      const diffs       = computeScoreDifferentials(completed, SCHOOL_NAME);
-      const consistency = computeConsistencyRating(completed, SCHOOL_NAME);
-      const trapGame    = computeTrapGameIndex(completed, SCHOOL_NAME);
-      const extremes    = computeLargestWinLoss(completed, SCHOOL_NAME);
-
-      setSection('game-control-content',
-        renderGameControl({ blowout, halfScore, closeGame }));
-
-      setSection('volatility-content',
-        renderVolatility({ consistency, diffs, trapGame, extremes }));
-    } else {
-      setSection('game-control-content', errorHTML('Could not load game data.'));
-      setSection('volatility-content',   errorHTML('Could not load game data.'));
-    }
+    _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo);
+    _loadAnalyticsData(completed, hasGames);
   },
 
 };
+
+/* =============================================================
+   Data Load Helpers
+   Called by SchoolPage.loadData() after fetches resolve.
+   Kept outside SchoolPage object so they stay flat and readable.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   _loadOverviewData
+   Renders hero band, DNA, snapshot, game cards, and identity.
+   Covers everything visible on the Overview lens.
+   ---------------------------------------------------------- */
+function _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo) {
+  /* --- Hero meta band --- */
+  const conf     = teamInfo ? (teamInfo.conference || TEXAS_STATIC.conference) : TEXAS_STATIC.conference;
+  const snapshot = hasGames ? _deriveSnapshotData(SCHOOL_NAME, completed, rank) : null;
+
+  const heroConf   = document.getElementById('school-hero-conf');
+  const heroRecord = document.getElementById('school-hero-record');
+  if (heroConf)   heroConf.textContent   = `${conf} \u00b7 ${SCHOOL_YEAR}`;
+  if (heroRecord) heroRecord.textContent = snapshot ? snapshot.record : '\u2014';
+
+  /* --- Program DNA --- */
+  const { labels, note } = computeDNA(SCHOOL_NAME, games, lines);
+  setSection('school-dna', renderDNACard(labels, note));
+
+  /* --- Season Snapshot --- */
+  setSection('school-snapshot', hasGames
+    ? renderSnapshotRow(snapshot)
+    : errorHTML('Could not load game data.'));
+
+  /* --- Last Game / Next Game --- */
+  setSection('school-game-cards', hasGames
+    ? renderGameCards(
+        _deriveLastGame(SCHOOL_NAME, completed, lines),
+        _deriveNextGame(SCHOOL_NAME, games,     lines)
+      )
+    : errorHTML('Could not load game data.'));
+
+  /* --- School Identity --- */
+  setSection('school-identity', renderIdentityCard(_deriveIdentity(teamInfo, coachInfo)));
+}
+
+/* ----------------------------------------------------------
+   _loadAnalyticsData
+   Renders Game Control and Volatility lenses (Phase 6).
+   Phase 7 will extend this function with Situational and
+   Market Performance — add below the Phase 6 block.
+   ---------------------------------------------------------- */
+function _loadAnalyticsData(completed, hasGames) {
+  if (!hasGames) {
+    setSection('game-control-content', errorHTML('Could not load game data.'));
+    setSection('volatility-content',   errorHTML('Could not load game data.'));
+    return;
+  }
+
+  /* --- Game Control --- */
+  const blowout   = computeBlowoutProfile(completed, SCHOOL_NAME);
+  const halfScore = computeHalfScoring(completed, SCHOOL_NAME);
+  const closeGame = computeCloseGameRecord(completed, SCHOOL_NAME);
+  setSection('game-control-content',
+    renderGameControl({ blowout, halfScore, closeGame }));
+
+  /* --- Volatility --- */
+  const diffs       = computeScoreDifferentials(completed, SCHOOL_NAME);
+  const consistency = computeConsistencyRating(completed, SCHOOL_NAME);
+  const trapGame    = computeTrapGameIndex(completed, SCHOOL_NAME);
+  const extremes    = computeLargestWinLoss(completed, SCHOOL_NAME);
+  setSection('volatility-content',
+    renderVolatility({ consistency, diffs, trapGame, extremes }));
+}
