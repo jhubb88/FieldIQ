@@ -35,6 +35,7 @@
   --text-primary:   #ffffff;  /* Headlines, labels */
   --text-secondary: #3a4060;  /* Supporting text */
   --text-muted:     #2a3050;  /* Placeholders, disabled states */
+  --color-loss:     #9b2335;  /* Season arc loss dot — muted red */
 
   /* ----------------------------------------------------------
      Font Families
