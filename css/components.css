@@ -389,3 +389,433 @@ body.is-home .page-content {
   letter-spacing: 0.04em;
   flex-shrink: 0;
 }
+
+/* =============================================================
+   SCHOOL PAGE COMPONENTS
+   All styles below are scoped to the school page shell.
+   Homepage component classes above are untouched.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   School Page Layout
+   Two-column layout: .school-sidebar (lens nav) on the left,
+   .school-main (content sections) on the right. Lives inside
+   .page-content which has 24px padding — the hero breaks out
+   with negative margins.
+   ---------------------------------------------------------- */
+.school-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  min-height: 100%;
+}
+
+/* ----------------------------------------------------------
+   School Sidebar
+   Lens navigation panel on the left side of the school page.
+   Sits inside .page-content — not the app shell sidebar.
+   ---------------------------------------------------------- */
+.school-sidebar {
+  width: 190px;
+  min-width: 190px;
+  flex-shrink: 0;
+  padding-top: 20px;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ----------------------------------------------------------
+   Lens Nav Item
+   Clickable nav link for each analytical lens. Active state
+   uses --school-primary as left border and text color.
+   ---------------------------------------------------------- */
+.lens-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 9px 16px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.lens-nav-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border-left-color: var(--border-color);
+}
+
+.lens-nav-item.active {
+  color: var(--school-primary);
+  background-color: var(--bg-card);
+  border-left-color: var(--school-primary);
+}
+
+/* ----------------------------------------------------------
+   School Main
+   Scrollable content area to the right of the lens nav.
+   ---------------------------------------------------------- */
+.school-main {
+  flex: 1;
+  min-width: 0;
+  padding-left: 28px;
+}
+
+/* ----------------------------------------------------------
+   School Hero
+   Full-width colored band at the top of the school page using
+   --school-primary. Breaks out of the 24px page-content
+   padding via negative margins so it bleeds edge-to-edge.
+   ---------------------------------------------------------- */
+.school-hero {
+  background-color: var(--school-primary);
+  margin: -24px -24px 24px;
+  padding: 28px 28px 24px;
+}
+
+/* ----------------------------------------------------------
+   School Header
+   School name, conference chip, and record inside .school-hero.
+   ---------------------------------------------------------- */
+.school-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.school-header-name {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--school-secondary);
+  line-height: 1.1;
+}
+
+.school-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.school-header-conf {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--school-secondary);
+  opacity: 0.75;
+}
+
+.school-header-record {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--school-secondary);
+  opacity: 0.9;
+}
+
+/* ----------------------------------------------------------
+   School Section
+   Wrapper for each analytical lens content area. Sections
+   are shown/hidden by toggleSection() in school.js.
+   ---------------------------------------------------------- */
+.school-section {
+  display: none;  /* Hidden by default — JS controls visibility */
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+.school-section.is-active {
+  display: flex;
+}
+
+/* ----------------------------------------------------------
+   School Section Title
+   Editorial heading using Playfair Display, colored with
+   a left border accent in --school-primary.
+   ---------------------------------------------------------- */
+.school-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-left: 3px solid var(--school-primary);
+  padding-left: 12px;
+  margin: 0;
+}
+
+/* ----------------------------------------------------------
+   Section Placeholder
+   Dashed placeholder block for sections not yet built
+   (Phases 5+). Centered text, low contrast, clearly WIP.
+   ---------------------------------------------------------- */
+.section-placeholder {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-placeholder-label {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.section-placeholder-note {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------------------
+   Program DNA Card
+   Full-width card displaying 3-5 plain-language analytical
+   labels for the program. Labels are generated from an array
+   so Phase 5 can swap data without restructuring the DOM.
+   ---------------------------------------------------------- */
+.dna-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dna-card-title {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.dna-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* Individual DNA label entry: pill badge + supporting stat */
+.dna-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.dna-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  background-color: var(--school-primary);
+  color: var(--school-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dna-stat {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+.dna-card-note {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+/* ----------------------------------------------------------
+   Snapshot Row
+   Horizontal row of 4 stat cards: Record, Rank, Avg Margin,
+   PPG. Uses CSS grid so cards stretch to equal width.
+   ---------------------------------------------------------- */
+.snapshot-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.snapshot-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.snapshot-card:hover {
+  border-color: var(--school-primary);
+}
+
+.snapshot-value {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.snapshot-label {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ----------------------------------------------------------
+   Game Cards Row
+   Side-by-side Last Game / Next Game cards.
+   ---------------------------------------------------------- */
+.game-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.game-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: var(--transition);
+}
+
+.game-card:hover {
+  border-color: var(--school-primary);
+}
+
+.game-card-header {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.game-card-score {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.game-card-ats {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--school-primary);
+}
+
+.game-card-meta {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Offseason state — muted, centered */
+.game-card-offseason {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* ----------------------------------------------------------
+   School Identity Card
+   Two-column grid of label/value fact rows.
+   ---------------------------------------------------------- */
+.identity-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.identity-card-title {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.identity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+
+.identity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.identity-item-label {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.identity-item-value {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
