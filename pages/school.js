@@ -9,6 +9,11 @@
    Phase 4: Skeleton with hardcoded Texas placeholder data.
    Phase 5: Live API data for DNA, snapshot, game cards, identity.
              School and year are hardcoded — Phase 11 adds switcher.
+   Phase 6: Game Control + Volatility lenses wired with live data.
+   Phase 7: Situational + Market Performance lenses wired.
+            _loadAnalyticsData now receives lines + priorCompleted.
+            Flag: function is ~60 lines — consider splitting into
+            _loadSituationalData / _loadMarketData before Phase 8.
    ============================================================= */
 
 /* ----------------------------------------------------------
@@ -217,6 +222,421 @@ function renderIdentityCard(data) {
     </div>`;
 }
 
+/* ----------------------------------------------------------
+   renderGameControl
+   Builds the Game Control lens content from gamecontrol.js
+   compute results. Three subsections separated by dividers:
+     1. Blowout Profile   — 3 win-bucket stat cards
+     2. Half Scoring      — 2 half-avg cards (skipped if null)
+     3. Close Game Record — 1 W-L stat card
+
+   @param {Object} data — {
+     blowout:   computeBlowoutProfile result,
+     halfScore: computeHalfScoring result (may be null),
+     closeGame: computeCloseGameRecord result,
+   }
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderGameControl(data) {
+  const { blowout, halfScore, closeGame } = data;
+
+  /* --- Blowout Profile subsection --- */
+  const blowoutCards = `
+    <h3 class="school-section-title">Blowout Profile</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Blowout Wins</div>
+        <div class="stat-card-value">${blowout.blowout}</div>
+        <div class="stat-card-sub">${blowout.blowoutPct}% of wins &middot; 15+ pts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Competitive Wins</div>
+        <div class="stat-card-value">${blowout.competitive}</div>
+        <div class="stat-card-sub">${blowout.competitivePct}% of wins &middot; 9\u201314 pts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Grinder Wins</div>
+        <div class="stat-card-value">${blowout.grinder}</div>
+        <div class="stat-card-sub">${blowout.grinderPct}% of wins &middot; 8 pts or less</div>
+      </div>
+    </div>`;
+
+  /* --- Half Scoring subsection — skipped if no half data --- */
+  let halfCards = '';
+  if (halfScore) {
+    const allowed1st = halfScore.avgAllowed1st !== null
+      ? `Allowed ${halfScore.avgAllowed1st} avg`
+      : 'Opponent data unavailable';
+    const allowed2nd = halfScore.avgAllowed2nd !== null
+      ? `Allowed ${halfScore.avgAllowed2nd} avg`
+      : 'Opponent data unavailable';
+
+    halfCards = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">Half Scoring</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">1st Half Avg</div>
+          <div class="stat-card-value">${halfScore.avg1stHalf}</div>
+          <div class="stat-card-sub">${allowed1st}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">2nd Half Avg</div>
+          <div class="stat-card-value">${halfScore.avg2ndHalf}</div>
+          <div class="stat-card-sub">${allowed2nd}</div>
+        </div>
+      </div>`;
+  }
+
+  /* --- Close Game Record subsection --- */
+  const closeRecord = closeGame.total > 0
+    ? `${closeGame.closeWins}-${closeGame.closeLosses} in ${closeGame.total} close game${closeGame.total !== 1 ? 's' : ''}`
+    : 'No close games this season';
+
+  const closeCards = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Close Game Record</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Close Games (decided by 8 or less)</div>
+        <div class="stat-card-value">${closeGame.closeWins}-${closeGame.closeLosses}</div>
+        <div class="stat-card-sub">${closeRecord}</div>
+      </div>
+    </div>`;
+
+  return blowoutCards + halfCards + closeCards;
+}
+
+/* ----------------------------------------------------------
+   renderVolatility
+   Builds the Volatility lens content from gamecontrol.js
+   compute results. Four subsections separated by dividers:
+     1. Consistency Rating — std dev + label stat card
+     2. Season Arc         — week-by-week dot strip
+     3. Trap Game Index    — margin drop card (if data available)
+     4. Largest Win / Loss — 2 stat cards side by side
+
+   @param {Object} data — {
+     consistency: computeConsistencyRating result,
+     diffs:       computeScoreDifferentials result,
+     trapGame:    computeTrapGameIndex result (may be null),
+     extremes:    computeLargestWinLoss result,
+   }
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderVolatility(data) {
+  const { consistency, diffs, trapGame, extremes } = data;
+
+  /* --- Consistency Rating subsection --- */
+  const consistencyCard = `
+    <h3 class="school-section-title">Consistency Rating</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Margin Std Dev</div>
+        <div class="stat-card-value">${consistency.stdDev}</div>
+        <div class="stat-card-sub">${consistency.label}</div>
+        <div class="stat-card-note">Lower = more predictable. Reliable \u2264 7 \u00b7 Volatile \u2265 14</div>
+      </div>
+    </div>`;
+
+  /* --- Season Arc subsection --- */
+  const arcDots = diffs.map(function (g) {
+    const resultClass = g.isWin ? 'win' : 'loss';
+    const sign        = g.margin >= 0 ? '+' : '';
+    const tip         = `Wk ${g.week} vs ${g.opponent} (${sign}${g.margin})`;
+    return `
+      <div class="season-arc-game ${resultClass}" title="${tip}">
+        <div class="season-arc-dot"></div>
+        <div class="season-arc-label">W${g.week}</div>
+      </div>`;
+  }).join('');
+
+  const arcSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Season Arc</h3>
+    <div class="season-arc">${arcDots}</div>`;
+
+  /* --- Trap Game Index subsection (only if enough data) --- */
+  let trapSection = '';
+  if (trapGame) {
+    const dropNum     = parseFloat(trapGame.drop);
+    const dropDisplay = dropNum >= 0
+      ? `\u2212${dropNum.toFixed(1)}`
+      : `+${Math.abs(dropNum).toFixed(1)}`;
+    trapSection = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">Trap Game Index</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">Margin vs Normal Games</div>
+          <div class="stat-card-value">${dropDisplay}</div>
+          <div class="stat-card-sub">Normal avg ${trapGame.avgNormalMargin} \u2192 Trap avg ${trapGame.avgTrapMargin}</div>
+          <div class="stat-card-note">Based on ${trapGame.trapCount} trap situation${trapGame.trapCount !== 1 ? 's' : ''}</div>
+          <div class="stat-card-note">+ = outperformed normal avg &middot; \u2212 = underperformed</div>
+        </div>
+      </div>`;
+  }
+
+  /* --- Largest Win / Largest Loss subsection --- */
+  const winCard = extremes.largestWin
+    ? `
+      <div class="stat-card">
+        <div class="stat-card-title">Largest Win</div>
+        <div class="stat-card-value">+${extremes.largestWin.margin}</div>
+        <div class="stat-card-sub">${extremes.largestWin.score} vs ${extremes.largestWin.opponent}</div>
+      </div>`
+    : `
+      <div class="stat-card">
+        <div class="stat-card-title">Largest Win</div>
+        <div class="stat-card-value">\u2014</div>
+        <div class="stat-card-sub">No wins recorded</div>
+      </div>`;
+
+  const lossCard = extremes.largestLoss
+    ? `
+      <div class="stat-card">
+        <div class="stat-card-title">Largest Loss</div>
+        <div class="stat-card-value">\u2212${extremes.largestLoss.margin}</div>
+        <div class="stat-card-sub">${extremes.largestLoss.score} vs ${extremes.largestLoss.opponent}</div>
+      </div>`
+    : `
+      <div class="stat-card">
+        <div class="stat-card-title">Largest Loss</div>
+        <div class="stat-card-value">\u2014</div>
+        <div class="stat-card-sub">No losses recorded</div>
+      </div>`;
+
+  const extremesSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Largest Win &amp; Loss</h3>
+    <div class="stat-cards-row">${winCard}${lossCard}</div>`;
+
+  return consistencyCard + arcSection + trapSection + extremesSection;
+}
+
+/* ----------------------------------------------------------
+   renderSituational
+   Builds the Situational lens content from situational.js
+   compute results. Four subsections separated by dividers:
+     1. Home vs Away     — 4 stat cards (record + scoring avg)
+     2. Night Games      — 1 stat card (skipped if total is 0)
+     3. Revenge Games    — list or "none" message
+     4. Record vs Ranked — 1 stat card (skipped if null)
+
+   Bowl record is intentionally omitted from this view —
+   it will surface in Phase 12 Long-Term Strength with
+   multi-year data. computeBowlRecord is already built
+   generically for that purpose.
+
+   @param {Object} data — {
+     splits:   computeHomeAwaySplits result,
+     night:    computeNightGameRecord result,
+     revenge:  computeRevengeGames result,
+     vsRanked: computeRecordVsRanked result (may be null),
+   }
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderSituational(data) {
+  const { splits, night, revenge, vsRanked } = data;
+
+  /* --- Home vs Away subsection --- */
+  const homeScoringNote = splits.homeAvgScore !== null
+    ? `Allowed ${splits.homeAvgAllowed} avg`
+    : 'No home games';
+  const awayScoringNote = splits.awayAvgScore !== null
+    ? `Allowed ${splits.awayAvgAllowed} avg`
+    : 'No away games';
+
+  const splitCards = `
+    <h3 class="school-section-title">Home vs Away</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Home Record</div>
+        <div class="stat-card-value">${splits.homeWins}-${splits.homeLosses}</div>
+        <div class="stat-card-sub">${splits.homeWins + splits.homeLosses} home game${splits.homeWins + splits.homeLosses !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Away Record</div>
+        <div class="stat-card-value">${splits.awayWins}-${splits.awayLosses}</div>
+        <div class="stat-card-sub">${splits.awayWins + splits.awayLosses} away game${splits.awayWins + splits.awayLosses !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Home Scoring Avg</div>
+        <div class="stat-card-value">${splits.homeAvgScore !== null ? splits.homeAvgScore : '\u2014'}</div>
+        <div class="stat-card-sub">${homeScoringNote}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Away Scoring Avg</div>
+        <div class="stat-card-value">${splits.awayAvgScore !== null ? splits.awayAvgScore : '\u2014'}</div>
+        <div class="stat-card-sub">${awayScoringNote}</div>
+      </div>
+    </div>`;
+
+  /* --- Night Games subsection — skipped if no night games played --- */
+  let nightSection = '';
+  if (night.total > 0) {
+    nightSection = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">Night Games</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">Night Game Record (6 PM CT or later)</div>
+          <div class="stat-card-value">${night.wins}-${night.losses}</div>
+          <div class="stat-card-sub">${night.total} night game${night.total !== 1 ? 's' : ''} this season</div>
+        </div>
+      </div>`;
+  }
+
+  /* --- Revenge Games subsection --- */
+  let revengeContent;
+  if (revenge.length === 0) {
+    revengeContent = `<p class="stat-card-note">No revenge game situations this season.</p>`;
+  } else {
+    const revengeRows = revenge.map(function (r) {
+      const resultClass = r.won ? 'color: var(--school-primary)' : 'color: var(--color-loss)';
+      return `
+        <div class="home-list-row">
+          <span class="home-list-label">${r.opponent}</span>
+          <span class="home-list-meta" style="${resultClass}">${r.result} ${r.margin}</span>
+        </div>`;
+    }).join('');
+    revengeContent = `<div class="home-list">${revengeRows}</div>`;
+  }
+
+  const revengeSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Revenge Games</h3>
+    <div class="stat-card" style="padding: 16px 20px;">
+      <div class="stat-card-title">Opponents who beat us in ${SCHOOL_YEAR - 1}</div>
+      ${revengeContent}
+    </div>`;
+
+  /* --- Record vs Ranked subsection — skipped if null --- */
+  let rankedSection = '';
+  if (vsRanked !== null) {
+    const rankedNote = vsRanked.total > 0
+      ? `${vsRanked.total} game${vsRanked.total !== 1 ? 's' : ''} vs ranked opponents`
+      : 'No games vs ranked opponents this season';
+    rankedSection = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">Record vs Ranked</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">vs AP Top 25</div>
+          <div class="stat-card-value">${vsRanked.wins}-${vsRanked.losses}</div>
+          <div class="stat-card-sub">${rankedNote}</div>
+        </div>
+      </div>`;
+  }
+
+  return splitCards + nightSection + revengeSection + rankedSection;
+}
+
+/* ----------------------------------------------------------
+   renderMarketPerformance
+   Builds the Market Performance lens content from market.js
+   compute results. Four subsections separated by dividers:
+     1. ATS Record        — 3 stat cards (overall, home, away)
+     2. O/U Record        — 2 stat cards (overs, unders) with pushes
+     3. Home Underdog ATS — 1 stat card (skipped if null)
+     4. Cover Streaks     — 2 stat cards (best, worst)
+
+   @param {Object} data — {
+     ats:          computeATSRecord result,
+     ou:           computeOURecord result,
+     homeUnderdog: computeHomeUnderdogATS result (may be null),
+     streaks:      computeCoverStreaks result,
+   }
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderMarketPerformance(data) {
+  const { ats, ou, homeUnderdog, streaks } = data;
+
+  /* Helper: formats a W-L record with optional push count */
+  function _fmtATS(bucket) {
+    const pushNote = bucket.pushes > 0
+      ? ` \u00b7 ${bucket.pushes} push${bucket.pushes !== 1 ? 'es' : ''}`
+      : '';
+    return `${bucket.wins}-${bucket.losses}${pushNote}`;
+  }
+
+  /* --- ATS Record subsection --- */
+  const atsCards = `
+    <h3 class="school-section-title">ATS Record</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Overall ATS</div>
+        <div class="stat-card-value">${ats.overall.wins}-${ats.overall.losses}</div>
+        <div class="stat-card-sub">${_fmtATS(ats.overall)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Home ATS</div>
+        <div class="stat-card-value">${ats.home.wins}-${ats.home.losses}</div>
+        <div class="stat-card-sub">${_fmtATS(ats.home)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Away ATS</div>
+        <div class="stat-card-value">${ats.away.wins}-${ats.away.losses}</div>
+        <div class="stat-card-sub">${_fmtATS(ats.away)}</div>
+      </div>
+    </div>`;
+
+  /* --- O/U Record subsection --- */
+  const ouPushNote = ou.pushes > 0
+    ? `${ou.pushes} push${ou.pushes !== 1 ? 'es' : ''}`
+    : 'No pushes';
+
+  const ouCards = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Over / Under Record</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Overs</div>
+        <div class="stat-card-value">${ou.overs}</div>
+        <div class="stat-card-sub">${ouPushNote}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Unders</div>
+        <div class="stat-card-value">${ou.unders}</div>
+        <div class="stat-card-sub">${ouPushNote}</div>
+      </div>
+    </div>`;
+
+  /* --- Home Underdog ATS subsection — skipped if null --- */
+  let underdogSection = '';
+  if (homeUnderdog !== null) {
+    underdogSection = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">Home Underdog ATS</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">ATS as Home Underdog</div>
+          <div class="stat-card-value">${homeUnderdog.wins}-${homeUnderdog.losses}</div>
+          <div class="stat-card-sub">${homeUnderdog.total} home underdog situation${homeUnderdog.total !== 1 ? 's' : ''}</div>
+        </div>
+      </div>`;
+  }
+
+  /* --- Cover Streaks subsection --- */
+  const streakCards = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Cover Streaks</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">Best Cover Streak</div>
+        <div class="stat-card-value">${streaks.bestStreak}</div>
+        <div class="stat-card-sub">Consecutive ATS covers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Worst Non-Cover Streak</div>
+        <div class="stat-card-value">${streaks.worstStreak}</div>
+        <div class="stat-card-sub">Consecutive ATS non-covers</div>
+      </div>
+    </div>`;
+
+  return atsCards + ouCards + underdogSection + streakCards;
+}
+
 /* =============================================================
    DOM Helpers
    ============================================================= */
@@ -339,7 +759,6 @@ function _deriveLastGame(school, completed, lines) {
     if (consensus && consensus.spread !== null && consensus.spread !== '') {
       const spreadNum  = parseFloat(consensus.spread);
       if (!isNaN(spreadNum)) {
-        /* spreadNum is from home team's perspective — flip for away team */
         const teamSpread = isHome ? spreadNum : -spreadNum;
         const atsResult  = margin + teamSpread;
         const spreadAbs  = Math.abs(teamSpread).toFixed(1);
@@ -470,201 +889,6 @@ function _deriveIdentity(teamInfo, coachInfo) {
   return data;
 }
 
-/* ----------------------------------------------------------
-   renderGameControl
-   Builds the Game Control lens content from gamecontrol.js
-   compute results. Three subsections separated by dividers:
-     1. Blowout Profile   — 3 win-bucket stat cards
-     2. Half Scoring      — 2 half-avg cards (skipped if null)
-     3. Close Game Record — 1 W-L stat card
-
-   @param {Object} data — {
-     blowout:   computeBlowoutProfile result,
-     halfScore: computeHalfScoring result (may be null),
-     closeGame: computeCloseGameRecord result,
-   }
-   @returns {string} HTML string
-   ---------------------------------------------------------- */
-function renderGameControl(data) {
-  const { blowout, halfScore, closeGame } = data;
-
-  /* --- Blowout Profile subsection --- */
-  const blowoutCards = `
-    <h3 class="school-section-title">Blowout Profile</h3>
-    <div class="stat-cards-row">
-      <div class="stat-card">
-        <div class="stat-card-title">Blowout Wins</div>
-        <div class="stat-card-value">${blowout.blowout}</div>
-        <div class="stat-card-sub">${blowout.blowoutPct}% of wins &middot; 15+ pts</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-title">Competitive Wins</div>
-        <div class="stat-card-value">${blowout.competitive}</div>
-        <div class="stat-card-sub">${blowout.competitivePct}% of wins &middot; 9\u201314 pts</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-title">Grinder Wins</div>
-        <div class="stat-card-value">${blowout.grinder}</div>
-        <div class="stat-card-sub">${blowout.grinderPct}% of wins &middot; 8 pts or less</div>
-      </div>
-    </div>`;
-
-  /* --- Half Scoring subsection — skipped if no half data --- */
-  let halfCards = '';
-  if (halfScore) {
-    const allowed1st = halfScore.avgAllowed1st !== null
-      ? `Allowed ${halfScore.avgAllowed1st} avg`
-      : 'Opponent data unavailable';
-    const allowed2nd = halfScore.avgAllowed2nd !== null
-      ? `Allowed ${halfScore.avgAllowed2nd} avg`
-      : 'Opponent data unavailable';
-
-    halfCards = `
-      <hr class="section-divider">
-      <h3 class="school-section-title">Half Scoring</h3>
-      <div class="stat-cards-row">
-        <div class="stat-card">
-          <div class="stat-card-title">1st Half Avg</div>
-          <div class="stat-card-value">${halfScore.avg1stHalf}</div>
-          <div class="stat-card-sub">${allowed1st}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">2nd Half Avg</div>
-          <div class="stat-card-value">${halfScore.avg2ndHalf}</div>
-          <div class="stat-card-sub">${allowed2nd}</div>
-        </div>
-      </div>`;
-  }
-
-  /* --- Close Game Record subsection --- */
-  const closeRecord = closeGame.total > 0
-    ? `${closeGame.closeWins}-${closeGame.closeLosses} in ${closeGame.total} close game${closeGame.total !== 1 ? 's' : ''}`
-    : 'No close games this season';
-
-  const closeCards = `
-    <hr class="section-divider">
-    <h3 class="school-section-title">Close Game Record</h3>
-    <div class="stat-cards-row">
-      <div class="stat-card">
-        <div class="stat-card-title">Close Games (decided by 8 or less)</div>
-        <div class="stat-card-value">${closeGame.closeWins}-${closeGame.closeLosses}</div>
-        <div class="stat-card-sub">${closeRecord}</div>
-      </div>
-    </div>`;
-
-  return blowoutCards + halfCards + closeCards;
-}
-
-/* ----------------------------------------------------------
-   renderVolatility
-   Builds the Volatility lens content from gamecontrol.js
-   compute results. Three subsections separated by dividers:
-     1. Consistency Rating — std dev + label stat card
-     2. Season Arc         — week-by-week dot strip
-     3. Trap Game Index    — margin drop card (if data available)
-     4. Largest Win / Loss — 2 stat cards side by side
-
-   @param {Object} data — {
-     consistency: computeConsistencyRating result,
-     diffs:       computeScoreDifferentials result,
-     trapGame:    computeTrapGameIndex result (may be null),
-     extremes:    computeLargestWinLoss result,
-   }
-   @returns {string} HTML string
-   ---------------------------------------------------------- */
-function renderVolatility(data) {
-  const { consistency, diffs, trapGame, extremes } = data;
-
-  /* --- Consistency Rating subsection --- */
-  const consistencyCard = `
-    <h3 class="school-section-title">Consistency Rating</h3>
-    <div class="stat-cards-row">
-      <div class="stat-card">
-        <div class="stat-card-title">Margin Std Dev</div>
-        <div class="stat-card-value">${consistency.stdDev}</div>
-        <div class="stat-card-sub">${consistency.label}</div>
-        <div class="stat-card-note">Lower = more predictable. Reliable \u2264 7 \u00b7 Volatile \u2265 14</div>
-      </div>
-    </div>`;
-
-  /* --- Season Arc subsection --- */
-  const arcDots = diffs.map(function (g) {
-    const resultClass = g.isWin ? 'win' : 'loss';
-    const sign        = g.margin >= 0 ? '+' : '';
-    const tip         = `Wk ${g.week} vs ${g.opponent} (${sign}${g.margin})`;
-    return `
-      <div class="season-arc-game ${resultClass}" title="${tip}">
-        <div class="season-arc-dot"></div>
-        <div class="season-arc-label">W${g.week}</div>
-      </div>`;
-  }).join('');
-
-  const arcSection = `
-    <hr class="section-divider">
-    <h3 class="school-section-title">Season Arc</h3>
-    <div class="season-arc">${arcDots}</div>`;
-
-  /* --- Trap Game Index subsection (only if enough data) --- */
-  let trapSection = '';
-  if (trapGame) {
-    /* drop = avgNormal - avgTrap.
-       Positive drop = Texas underperformed in trap games (bad) → show as −.
-       Negative drop = Texas overperformed in trap games (good) → show as +. */
-    const dropNum     = parseFloat(trapGame.drop);
-    const dropDisplay = dropNum >= 0
-      ? `\u2212${dropNum.toFixed(1)}`
-      : `+${Math.abs(dropNum).toFixed(1)}`;
-    trapSection = `
-      <hr class="section-divider">
-      <h3 class="school-section-title">Trap Game Index</h3>
-      <div class="stat-cards-row">
-        <div class="stat-card">
-          <div class="stat-card-title">Margin vs Normal Games</div>
-          <div class="stat-card-value">${dropDisplay}</div>
-          <div class="stat-card-sub">Normal avg ${trapGame.avgNormalMargin} \u2192 Trap avg ${trapGame.avgTrapMargin}</div>
-          <div class="stat-card-note">Based on ${trapGame.trapCount} trap situation${trapGame.trapCount !== 1 ? 's' : ''}</div>
-          <div class="stat-card-note">+ = outperformed normal avg &middot; \u2212 = underperformed</div>
-        </div>
-      </div>`;
-  }
-
-  /* --- Largest Win / Largest Loss subsection --- */
-  const winCard = extremes.largestWin
-    ? `
-      <div class="stat-card">
-        <div class="stat-card-title">Largest Win</div>
-        <div class="stat-card-value">+${extremes.largestWin.margin}</div>
-        <div class="stat-card-sub">${extremes.largestWin.score} vs ${extremes.largestWin.opponent}</div>
-      </div>`
-    : `
-      <div class="stat-card">
-        <div class="stat-card-title">Largest Win</div>
-        <div class="stat-card-value">\u2014</div>
-        <div class="stat-card-sub">No wins recorded</div>
-      </div>`;
-
-  const lossCard = extremes.largestLoss
-    ? `
-      <div class="stat-card">
-        <div class="stat-card-title">Largest Loss</div>
-        <div class="stat-card-value">\u2212${extremes.largestLoss.margin}</div>
-        <div class="stat-card-sub">${extremes.largestLoss.score} vs ${extremes.largestLoss.opponent}</div>
-      </div>`
-    : `
-      <div class="stat-card">
-        <div class="stat-card-title">Largest Loss</div>
-        <div class="stat-card-value">\u2014</div>
-        <div class="stat-card-sub">No losses recorded</div>
-      </div>`;
-
-  const extremesSection = `
-    <hr class="section-divider">
-    <h3 class="school-section-title">Largest Win &amp; Loss</h3>
-    <div class="stat-cards-row">${winCard}${lossCard}</div>`;
-
-  return consistencyCard + arcSection + trapSection + extremesSection;
-}
-
 /* =============================================================
    Page Structure Builders
    ============================================================= */
@@ -731,6 +955,32 @@ function renderVolatilitySection() {
 }
 
 /* ----------------------------------------------------------
+   renderSituationalSection
+   Returns the Situational section wrapper with an inner
+   content slot. loadData() targets 'situational-content'
+   via setSection() once compute data is ready.
+   ---------------------------------------------------------- */
+function renderSituationalSection() {
+  return `
+    <div class="school-section" data-section="situational">
+      <div id="situational-content">${loadingHTML()}</div>
+    </div>`;
+}
+
+/* ----------------------------------------------------------
+   renderMarketSection
+   Returns the Market Performance section wrapper with an
+   inner content slot. loadData() targets 'market-content'
+   via setSection() once compute data is ready.
+   ---------------------------------------------------------- */
+function renderMarketSection() {
+  return `
+    <div class="school-section" data-section="market">
+      <div id="market-content">${loadingHTML()}</div>
+    </div>`;
+}
+
+/* ----------------------------------------------------------
    renderPlaceholderSection
    Dashed placeholder for sections not yet built out.
    ---------------------------------------------------------- */
@@ -747,13 +997,17 @@ function renderPlaceholderSection(section) {
 
 /* ----------------------------------------------------------
    renderSections
-   Overview gets a skeleton; all others get a placeholder.
+   Overview gets a skeleton; Game Control, Volatility,
+   Situational, and Market get content slots; all others
+   get a placeholder.
    ---------------------------------------------------------- */
 function renderSections() {
   return SECTIONS.map(function (section) {
     if (section.id === 'overview')     return renderOverview();
     if (section.id === 'game-control') return renderGameControlSection();
     if (section.id === 'volatility')   return renderVolatilitySection();
+    if (section.id === 'situational')  return renderSituationalSection();
+    if (section.id === 'market')       return renderMarketSection();
     return renderPlaceholderSection(section);
   }).join('');
 }
@@ -806,32 +1060,36 @@ const SchoolPage = {
      Fires all fetch calls concurrently via Promise.allSettled,
      unwraps results, then delegates rendering to two helpers:
        _loadOverviewData  — hero, DNA, snapshot, game cards, identity
-       _loadAnalyticsData — Game Control, Volatility (Phase 6+)
+       _loadAnalyticsData — Game Control, Volatility, Situational,
+                            Market Performance (Phases 6 + 7)
      A failed fetch never crashes the page — each section falls
      back to a safe empty value and updates independently.
      ---------------------------------------------------------- */
   async loadData() {
-    const [gamesResult, rankResult, linesResult, coachResult, teamResult] =
+    const [gamesResult, rankResult, linesResult, coachResult, teamResult, priorGamesResult] =
       await Promise.allSettled([
         fetchSeasonRecord(SCHOOL_NAME, SCHOOL_YEAR),
         fetchFinalRank(SCHOOL_NAME, SCHOOL_YEAR),
         fetchGameLines(SCHOOL_NAME, SCHOOL_YEAR),
         fetchCoachInfo(SCHOOL_NAME, SCHOOL_YEAR),
         fetchTeamInfo(SCHOOL_NAME),
+        fetchSeasonRecord(SCHOOL_NAME, SCHOOL_YEAR - 1),
       ]);
 
     /* Unwrap — each failure falls back to a safe empty default */
-    const games     = gamesResult.status === 'fulfilled' ? gamesResult.value : [];
-    const rank      = rankResult.status  === 'fulfilled' ? rankResult.value  : null;
-    const lines     = linesResult.status === 'fulfilled' ? linesResult.value : [];
-    const coachInfo = coachResult.status === 'fulfilled' ? coachResult.value : null;
-    const teamInfo  = teamResult.status  === 'fulfilled' ? teamResult.value  : null;
+    const games      = gamesResult.status      === 'fulfilled' ? gamesResult.value      : [];
+    const rank       = rankResult.status       === 'fulfilled' ? rankResult.value       : null;
+    const lines      = linesResult.status      === 'fulfilled' ? linesResult.value      : [];
+    const coachInfo  = coachResult.status      === 'fulfilled' ? coachResult.value      : null;
+    const teamInfo   = teamResult.status       === 'fulfilled' ? teamResult.value       : null;
+    const priorGames = priorGamesResult.status === 'fulfilled' ? priorGamesResult.value : [];
 
-    const completed = _completedGames(games);
-    const hasGames  = completed.length > 0;
+    const completed      = _completedGames(games);
+    const priorCompleted = _completedGames(priorGames);
+    const hasGames       = completed.length > 0;
 
     _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo);
-    _loadAnalyticsData(completed, hasGames);
+    _loadAnalyticsData(completed, hasGames, lines, priorCompleted);
   },
 
 };
@@ -880,29 +1138,55 @@ function _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, co
 
 /* ----------------------------------------------------------
    _loadAnalyticsData
-   Renders Game Control and Volatility lenses (Phase 6).
-   Phase 7 will extend this function with Situational and
-   Market Performance — add below the Phase 6 block.
+   Renders Game Control, Volatility, Situational, and Market
+   Performance lenses (Phases 6 and 7).
+
+   Phase 8 flag: this function is now ~60 lines. If Phase 8
+   adds more compute calls, split into _loadSituationalData()
+   and _loadMarketData() sub-helpers before proceeding.
+
+   @param {Array}   completed      — current season completed games
+   @param {boolean} hasGames       — false if no games loaded
+   @param {Array}   lines          — fetchGameLines() output
+   @param {Array}   priorCompleted — prior season completed games
    ---------------------------------------------------------- */
-function _loadAnalyticsData(completed, hasGames) {
+function _loadAnalyticsData(completed, hasGames, lines, priorCompleted) {
   if (!hasGames) {
     setSection('game-control-content', errorHTML('Could not load game data.'));
     setSection('volatility-content',   errorHTML('Could not load game data.'));
+    setSection('situational-content',  errorHTML('Could not load game data.'));
+    setSection('market-content',       errorHTML('Could not load game data.'));
     return;
   }
 
-  /* --- Game Control --- */
+  /* --- Game Control (Phase 6) --- */
   const blowout   = computeBlowoutProfile(completed, SCHOOL_NAME);
   const halfScore = computeHalfScoring(completed, SCHOOL_NAME);
   const closeGame = computeCloseGameRecord(completed, SCHOOL_NAME);
   setSection('game-control-content',
     renderGameControl({ blowout, halfScore, closeGame }));
 
-  /* --- Volatility --- */
+  /* --- Volatility (Phase 6) --- */
   const diffs       = computeScoreDifferentials(completed, SCHOOL_NAME);
   const consistency = computeConsistencyRating(completed, SCHOOL_NAME);
   const trapGame    = computeTrapGameIndex(completed, SCHOOL_NAME);
   const extremes    = computeLargestWinLoss(completed, SCHOOL_NAME);
   setSection('volatility-content',
     renderVolatility({ consistency, diffs, trapGame, extremes }));
+
+  /* --- Situational (Phase 7) --- */
+  const splits   = computeHomeAwaySplits(completed, SCHOOL_NAME);
+  const night    = computeNightGameRecord(completed, SCHOOL_NAME);
+  const revenge  = computeRevengeGames(completed, priorCompleted, SCHOOL_NAME);
+  const vsRanked = computeRecordVsRanked(completed, SCHOOL_NAME);
+  setSection('situational-content',
+    renderSituational({ splits, night, revenge, vsRanked }));
+
+  /* --- Market Performance (Phase 7) --- */
+  const ats          = computeATSRecord(completed, lines, SCHOOL_NAME);
+  const ou           = computeOURecord(completed, lines);
+  const homeUnderdog = computeHomeUnderdogATS(completed, lines, SCHOOL_NAME);
+  const streaks      = computeCoverStreaks(completed, lines, SCHOOL_NAME);
+  setSection('market-content',
+    renderMarketPerformance({ ats, ou, homeUnderdog, streaks }));
 }
