@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/components.css" />
+
+  <!-- Leaflet — campus map (Phase 8). Must load before school.js. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -82,14 +85,16 @@
 
   <!-- --------------------------------------------------------
     JS Load Order
-    1. theme    — applyTheme() must be available before app init
-    2. config   — CFBD_CONFIG.apiKey must exist before api.js runs
-    3. api      — cfbdFetch() used by page modules
-    4. router   — navigate() used by app.js and page modules
-    5. home     — page module, must exist before router runs
-    6. school   — page module, must exist before router runs
-    7. app      — entry point, runs last after all deps are ready
+    1. leaflet  — campus map lib, global L must exist before school.js
+    2. theme    — applyTheme() must be available before app init
+    3. config   — CFBD_CONFIG.apiKey must exist before api.js runs
+    4. api      — cfbdFetch() used by page modules
+    5. router   — navigate() used by app.js and page modules
+    6. home     — page module, must exist before router runs
+    7. school   — page module, must exist before router runs
+    8. app      — entry point, runs last after all deps are ready
   --------------------------------------------------------- -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/theme.js"></script>
   <script src="config.js"></script>
   <script src="js/api.js"></script>

@@ -948,3 +948,137 @@ body.is-home .page-content {
   color: var(--text-muted);
   text-align: center;
 }
+
+/* =============================================================
+   PHASE 8 COMPONENTS
+   Campus Map (Leaflet.js) — inline map + click-to-expand modal.
+   All colors reference CSS variables — no hardcoded values.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   Campus Map Wrap
+   Card-style container that holds the inline Leaflet map and
+   the expand button below it. Sits inside .school-section.
+   ---------------------------------------------------------- */
+.campus-map-wrap {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----------------------------------------------------------
+   Campus Map Element
+   The div that Leaflet mounts into. Must have an explicit
+   height — Leaflet will not render without one.
+   ---------------------------------------------------------- */
+.campus-map-el {
+  width: 100%;
+  height: 340px;
+}
+
+/* ----------------------------------------------------------
+   Campus Map Expand Button
+   Sits below the inline map inside .campus-map-wrap.
+   Uses --school-primary as background on hover.
+   ---------------------------------------------------------- */
+.campus-map-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.campus-map-expand-btn:hover {
+  color: var(--school-secondary);
+  background-color: var(--school-primary);
+}
+
+/* ----------------------------------------------------------
+   Campus Map Modal
+   Full-viewport overlay. Hidden by default — JS adds
+   .is-open to show it when the expand button is clicked.
+   ---------------------------------------------------------- */
+.campus-map-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: rgba(8, 10, 15, 0.88);
+  align-items: center;
+  justify-content: center;
+}
+
+.campus-map-modal.is-open {
+  display: flex;
+}
+
+/* ----------------------------------------------------------
+   Campus Map Modal Inner
+   Centered panel containing the full-size map and close button.
+   ---------------------------------------------------------- */
+.campus-map-modal-inner {
+  position: relative;
+  width: 80vw;
+  max-width: 1100px;
+  height: 70vh;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Full-size map element inside the modal — fills remaining height */
+.campus-map-modal-el {
+  flex: 1;
+  width: 100%;
+}
+
+/* ----------------------------------------------------------
+   Campus Map Modal Close Button
+   Absolute-positioned X in the top-right corner of the modal.
+   ---------------------------------------------------------- */
+.campus-map-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--school-primary);
+  border: none;
+  border-radius: 50%;
+  color: var(--school-secondary);
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.campus-map-modal-close:hover {
+  opacity: 0.8;
+}

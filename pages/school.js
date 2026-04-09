@@ -11,9 +11,9 @@
              School and year are hardcoded — Phase 11 adds switcher.
    Phase 6: Game Control + Volatility lenses wired with live data.
    Phase 7: Situational + Market Performance lenses wired.
-            _loadAnalyticsData now receives lines + priorCompleted.
-            Flag: function is ~60 lines — consider splitting into
-            _loadSituationalData / _loadMarketData before Phase 8.
+   Refactor: _loadAnalyticsData split into _loadGameControlData,
+             _loadSituationalData, _loadMarketData before Phase 8.
+   Phase 8: Campus Map (Leaflet.js) — next.
    ============================================================= */
 
 /* ----------------------------------------------------------
@@ -40,6 +40,8 @@ const TEXAS_STATIC = {
   coach:         '\u2014',       // overwritten by fetchCoachInfo at runtime
   coachSeason:   '',
   coachRecord:   '',
+  lat:           30.2838,        // Darrell K Royal stadium latitude
+  lng:           -97.7326,       // Darrell K Royal stadium longitude
 };
 
 /* ----------------------------------------------------------
@@ -74,6 +76,14 @@ function toggleSection(sectionId) {
   document.querySelectorAll('.school-section').forEach(function (section) {
     section.classList.toggle('is-active', section.dataset.section === sectionId);
   });
+
+  /* Leaflet needs a size recalculation after the section transitions from
+     display:none to display:flex — fire after the paint cycle settles. */
+  if (sectionId === 'campus-map' && window._campusMapInline) {
+    setTimeout(function () {
+      window._campusMapInline.invalidateSize();
+    }, 100);
+  }
 }
 
 /* =============================================================
@@ -981,6 +991,39 @@ function renderMarketSection() {
 }
 
 /* ----------------------------------------------------------
+   renderCampusMapSection
+   Returns the Campus Map section wrapper. Contains:
+     - An inline map div (340px tall) showing the stadium pin
+     - An expand button that opens .campus-map-modal
+     - A modal overlay with a larger map instance
+   _initCampusMap() is called by _loadCampusMap() after the
+   DOM is ready, so the Leaflet maps mount into real elements.
+   ---------------------------------------------------------- */
+function renderCampusMapSection() {
+  return `
+    <div class="school-section" data-section="campus-map">
+      <h2 class="school-section-title">Campus Map</h2>
+
+      <!-- Inline mini-map -->
+      <div class="campus-map-wrap">
+        <div class="campus-map-el" id="campus-map-inline"></div>
+        <button class="campus-map-expand-btn" onclick="_openMapModal()">
+          View Full Map
+        </button>
+      </div>
+
+      <!-- Full-screen modal map -->
+      <div class="campus-map-modal" id="campus-map-modal">
+        <div class="campus-map-modal-inner">
+          <button class="campus-map-modal-close" onclick="_closeMapModal()" aria-label="Close map">&times;</button>
+          <div class="campus-map-modal-el" id="campus-map-modal-el"></div>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+/* ----------------------------------------------------------
    renderPlaceholderSection
    Dashed placeholder for sections not yet built out.
    ---------------------------------------------------------- */
@@ -1008,6 +1051,7 @@ function renderSections() {
     if (section.id === 'volatility')   return renderVolatilitySection();
     if (section.id === 'situational')  return renderSituationalSection();
     if (section.id === 'market')       return renderMarketSection();
+    if (section.id === 'campus-map')   return renderCampusMapSection();
     return renderPlaceholderSection(section);
   }).join('');
 }
@@ -1060,8 +1104,8 @@ const SchoolPage = {
      Fires all fetch calls concurrently via Promise.allSettled,
      unwraps results, then delegates rendering to two helpers:
        _loadOverviewData  — hero, DNA, snapshot, game cards, identity
-       _loadAnalyticsData — Game Control, Volatility, Situational,
-                            Market Performance (Phases 6 + 7)
+       _loadAnalyticsData — coordinates Game Control, Volatility,
+                            Situational, Market Performance
      A failed fetch never crashes the page — each section falls
      back to a safe empty value and updates independently.
      ---------------------------------------------------------- */
@@ -1137,20 +1181,72 @@ function _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, co
 }
 
 /* ----------------------------------------------------------
+   _loadGameControlData
+   Renders Game Control and Volatility lenses (Phase 6).
+   @param {Array} completed — current season completed games
+   ---------------------------------------------------------- */
+function _loadGameControlData(completed) {
+  /* --- Game Control --- */
+  const blowout   = computeBlowoutProfile(completed, SCHOOL_NAME);
+  const halfScore = computeHalfScoring(completed, SCHOOL_NAME);
+  const closeGame = computeCloseGameRecord(completed, SCHOOL_NAME);
+  setSection('game-control-content',
+    renderGameControl({ blowout, halfScore, closeGame }));
+
+  /* --- Volatility --- */
+  const diffs       = computeScoreDifferentials(completed, SCHOOL_NAME);
+  const consistency = computeConsistencyRating(completed, SCHOOL_NAME);
+  const trapGame    = computeTrapGameIndex(completed, SCHOOL_NAME);
+  const extremes    = computeLargestWinLoss(completed, SCHOOL_NAME);
+  setSection('volatility-content',
+    renderVolatility({ consistency, diffs, trapGame, extremes }));
+}
+
+/* ----------------------------------------------------------
+   _loadSituationalData
+   Renders Situational lens (Phase 7).
+   @param {Array} completed      — current season completed games
+   @param {Array} priorCompleted — prior season completed games
+   ---------------------------------------------------------- */
+function _loadSituationalData(completed, priorCompleted) {
+  const splits   = computeHomeAwaySplits(completed, SCHOOL_NAME);
+  const night    = computeNightGameRecord(completed, SCHOOL_NAME);
+  const revenge  = computeRevengeGames(completed, priorCompleted, SCHOOL_NAME);
+  const vsRanked = computeRecordVsRanked(completed, SCHOOL_NAME);
+  setSection('situational-content',
+    renderSituational({ splits, night, revenge, vsRanked }));
+}
+
+/* ----------------------------------------------------------
+   _loadMarketData
+   Renders Market Performance lens (Phase 7).
+   @param {Array} completed — current season completed games
+   @param {Array} lines     — fetchGameLines() output
+   ---------------------------------------------------------- */
+function _loadMarketData(completed, lines) {
+  const ats          = computeATSRecord(completed, lines, SCHOOL_NAME);
+  const ou           = computeOURecord(completed, lines);
+  const homeUnderdog = computeHomeUnderdogATS(completed, lines, SCHOOL_NAME);
+  const streaks      = computeCoverStreaks(completed, lines, SCHOOL_NAME);
+  setSection('market-content',
+    renderMarketPerformance({ ats, ou, homeUnderdog, streaks }));
+}
+
+/* ----------------------------------------------------------
    _loadAnalyticsData
-   Renders Game Control, Volatility, Situational, and Market
-   Performance lenses (Phases 6 and 7).
-
-   Phase 8 flag: this function is now ~60 lines. If Phase 8
-   adds more compute calls, split into _loadSituationalData()
-   and _loadMarketData() sub-helpers before proceeding.
-
+   Coordinator: guards on hasGames, then delegates to the
+   three sub-helpers for Game Control, Situational, and Market.
+   Campus map is initialized regardless of game data — it is
+   static and does not depend on API results.
    @param {Array}   completed      — current season completed games
    @param {boolean} hasGames       — false if no games loaded
    @param {Array}   lines          — fetchGameLines() output
    @param {Array}   priorCompleted — prior season completed games
    ---------------------------------------------------------- */
 function _loadAnalyticsData(completed, hasGames, lines, priorCompleted) {
+  /* Campus map is always available — no game data required */
+  _loadCampusMap();
+
   if (!hasGames) {
     setSection('game-control-content', errorHTML('Could not load game data.'));
     setSection('volatility-content',   errorHTML('Could not load game data.'));
@@ -1159,34 +1255,115 @@ function _loadAnalyticsData(completed, hasGames, lines, priorCompleted) {
     return;
   }
 
-  /* --- Game Control (Phase 6) --- */
-  const blowout   = computeBlowoutProfile(completed, SCHOOL_NAME);
-  const halfScore = computeHalfScoring(completed, SCHOOL_NAME);
-  const closeGame = computeCloseGameRecord(completed, SCHOOL_NAME);
-  setSection('game-control-content',
-    renderGameControl({ blowout, halfScore, closeGame }));
+  _loadGameControlData(completed);
+  _loadSituationalData(completed, priorCompleted);
+  _loadMarketData(completed, lines);
+}
 
-  /* --- Volatility (Phase 6) --- */
-  const diffs       = computeScoreDifferentials(completed, SCHOOL_NAME);
-  const consistency = computeConsistencyRating(completed, SCHOOL_NAME);
-  const trapGame    = computeTrapGameIndex(completed, SCHOOL_NAME);
-  const extremes    = computeLargestWinLoss(completed, SCHOOL_NAME);
-  setSection('volatility-content',
-    renderVolatility({ consistency, diffs, trapGame, extremes }));
+/* ----------------------------------------------------------
+   _loadCampusMap
+   Reads --school-primary from the live CSS custom properties
+   (set by applyTheme() before loadData() runs) and initializes
+   both the inline map and the modal map via _initCampusMap().
+   Called by _loadAnalyticsData — always fires, no API needed.
+   ---------------------------------------------------------- */
+function _loadCampusMap() {
+  /* Read school color from live CSS variable — set by applyTheme() */
+  const pinColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--school-primary').trim() || '#BF5700';
 
-  /* --- Situational (Phase 7) --- */
-  const splits   = computeHomeAwaySplits(completed, SCHOOL_NAME);
-  const night    = computeNightGameRecord(completed, SCHOOL_NAME);
-  const revenge  = computeRevengeGames(completed, priorCompleted, SCHOOL_NAME);
-  const vsRanked = computeRecordVsRanked(completed, SCHOOL_NAME);
-  setSection('situational-content',
-    renderSituational({ splits, night, revenge, vsRanked }));
+  _initCampusMap('campus-map-inline',    pinColor, 15, false);
+  _initCampusMap('campus-map-modal-el',  pinColor, 16, true);
 
-  /* --- Market Performance (Phase 7) --- */
-  const ats          = computeATSRecord(completed, lines, SCHOOL_NAME);
-  const ou           = computeOURecord(completed, lines);
-  const homeUnderdog = computeHomeUnderdogATS(completed, lines, SCHOOL_NAME);
-  const streaks      = computeCoverStreaks(completed, lines, SCHOOL_NAME);
-  setSection('market-content',
-    renderMarketPerformance({ ats, ou, homeUnderdog, streaks }));
+  /* Escape key closes the modal — registered once per page load */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') _closeMapModal();
+  });
+}
+
+/* ----------------------------------------------------------
+   _initCampusMap
+   Mounts a Leaflet map into the given element ID, centered on
+   the Texas stadium coordinates, with a colored divIcon pin.
+   The modal map instance is stored on window so _openMapModal
+   can call invalidateSize() after the modal becomes visible.
+
+   @param {string}  elId      — id of the div to mount into
+   @param {string}  pinColor  — hex color for the custom pin
+   @param {number}  zoom      — initial zoom level
+   @param {boolean} isModal   — true = store as window._campusMapModal
+   ---------------------------------------------------------- */
+function _initCampusMap(elId, pinColor, zoom, isModal) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  /* Build the map — no attribution clutter, scroll wheel off for inline */
+  const map = L.map(el, {
+    center:             [TEXAS_STATIC.lat, TEXAS_STATIC.lng],
+    zoom:               zoom,
+    scrollWheelZoom:    isModal,
+    zoomControl:        isModal,
+    attributionControl: true,
+  });
+
+  /* CartoDB dark tile layer — works from file:// (no referer required) */
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom:     19,
+    attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors \u00a9 <a href="https://carto.com/">CARTO</a>',
+  }).addTo(map);
+
+  /* School-colored div pin using CSS box-shadow for the dot glow */
+  const pin = L.divIcon({
+    className: '',
+    html: `<div style="
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: ${pinColor};
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 2px ${pinColor}, 0 2px 8px rgba(0,0,0,0.5);
+    "></div>`,
+    iconSize:   [18, 18],
+    iconAnchor: [9, 9],
+  });
+
+  L.marker([TEXAS_STATIC.lat, TEXAS_STATIC.lng], { icon: pin })
+    .addTo(map)
+    .bindPopup(`<strong>${TEXAS_STATIC.stadium}</strong><br>${TEXAS_STATIC.city}`);
+
+  /* Store map references so invalidateSize() can be called after reveal */
+  if (isModal) {
+    window._campusMapModal = map;
+  } else {
+    window._campusMapInline = map;
+  }
+}
+
+/* ----------------------------------------------------------
+   _openMapModal
+   Shows the campus map modal and calls invalidateSize() so
+   Leaflet re-renders tiles now that the container is visible.
+   Called by onclick on the expand button in the section HTML.
+   ---------------------------------------------------------- */
+function _openMapModal() {
+  const modal = document.getElementById('campus-map-modal');
+  if (!modal) return;
+  modal.classList.add('is-open');
+
+  /* Leaflet needs a size recalculation after display:none → flex */
+  if (window._campusMapModal) {
+    setTimeout(function () {
+      window._campusMapModal.invalidateSize();
+    }, 50);
+  }
+}
+
+/* ----------------------------------------------------------
+   _closeMapModal
+   Hides the campus map modal.
+   Called by onclick on the close button in the modal HTML.
+   ---------------------------------------------------------- */
+function _closeMapModal() {
+  const modal = document.getElementById('campus-map-modal');
+  if (modal) modal.classList.remove('is-open');
 }
