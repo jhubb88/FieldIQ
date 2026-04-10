@@ -17,27 +17,63 @@
    ============================================================= */
 
 /* ----------------------------------------------------------
-   Season + School Constants
-   Phase 11 will replace these with dynamic school selection.
+   Season Constant
    ---------------------------------------------------------- */
-const SCHOOL_NAME = 'Texas';
 const SCHOOL_YEAR = 2024;
 
 /* ----------------------------------------------------------
-   School Data
-   Loaded from data/schools.json at runtime in loadData().
-   _schoolData holds the matching entry for SCHOOL_ID.
-   Phase 11 will replace SCHOOL_ID with dynamic selection.
+   Active School — set dynamically in render() from URL params.
+   Defaults to Texas so the page still works if no param is
+   passed (e.g. the user navigates to #school with no team).
    ---------------------------------------------------------- */
-const SCHOOL_ID = 'texas';
+let SCHOOL_NAME = 'Texas';
+let SCHOOL_ID   = 'texas';
+
+/* ----------------------------------------------------------
+   School Data
+   Loaded from SCHOOLS_DATA global in render() and loadData().
+   _schoolData holds the matching entry for SCHOOL_ID.
+   ---------------------------------------------------------- */
 let _schoolData = null;
 
 /* ----------------------------------------------------------
    H2H Search State
-   _h2hSearchInitialized prevents re-binding input events
-   when the user navigates back to the H2H section.
+   Reset to false in render() each time the school page mounts
+   so the input events bind fresh to the new DOM elements.
    ---------------------------------------------------------- */
 let _h2hSearchInitialized = false;
+
+/* ----------------------------------------------------------
+   _schoolIdFromCfbd
+   Looks up the schools.json id (e.g. 'texas') for a given
+   CFBD school name (e.g. 'Texas'). Falls back to a slugified
+   version of the name if no match is found.
+
+   @param {string} cfbdName — CFBD school name, e.g. 'Texas'
+   @returns {string} — schools.json id, e.g. 'texas'
+   ---------------------------------------------------------- */
+function _schoolIdFromCfbd(cfbdName) {
+  const entry = (SCHOOLS_DATA.teams || []).find(function (t) {
+    return t.name.replace(t.mascot, '').trim() === cfbdName;
+  });
+  return entry ? entry.id : cfbdName.toLowerCase().replace(/\s+/g, '-');
+}
+
+/* ----------------------------------------------------------
+   _schoolDisplayName
+   Returns the full display name (e.g. 'Texas Longhorns') for
+   a given CFBD school name (e.g. 'Texas'). Falls back to the
+   CFBD name itself if the school is not in schools.json.
+
+   @param {string} cfbdName — CFBD school name
+   @returns {string} — full display name
+   ---------------------------------------------------------- */
+function _schoolDisplayName(cfbdName) {
+  const entry = (SCHOOLS_DATA.teams || []).find(function (t) {
+    return t.name.replace(t.mascot, '').trim() === cfbdName;
+  });
+  return entry ? entry.name : cfbdName;
+}
 
 /* ----------------------------------------------------------
    Section definitions
@@ -1136,6 +1172,16 @@ const SchoolPage = {
      Phase 11 will use params.id to select a school dynamically.
      ---------------------------------------------------------- */
   render(params = {}) {
+    /* Resolve the active school from the URL param.
+       Falls back to Texas if no team param is present. */
+    SCHOOL_NAME = (params.team && params.team.trim()) ? params.team.trim() : 'Texas';
+    SCHOOL_ID   = _schoolIdFromCfbd(SCHOOL_NAME);
+
+    /* Reset H2H state — new DOM, new event bindings needed */
+    _h2hSearchInitialized = false;
+
+    const displayName = _schoolDisplayName(SCHOOL_NAME);
+
     Promise.resolve().then(function () { SchoolPage.loadData(); });
 
     return `
@@ -1145,7 +1191,7 @@ const SchoolPage = {
              Conference and record are updated by loadData(). -->
         <div class="school-hero">
           <div class="school-header">
-            <div class="school-header-name">Texas Longhorns</div>
+            <div class="school-header-name">${displayName}</div>
             <div class="school-header-meta">
               <span class="school-header-conf" id="school-hero-conf">SEC &middot; ${SCHOOL_YEAR}</span>
               <span class="school-header-record" id="school-hero-record">\u2014</span>

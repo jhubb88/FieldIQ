@@ -24,12 +24,11 @@ const HISTORY_YEAR = 2013;
 /* ----------------------------------------------------------
    MOSAIC CONFIG
    Muted FBS-style color palette for placeholder tiles.
-   Real logos replace these in Phase 7.
    Each entry: [backgroundColor, abbreviation]
    ---------------------------------------------------------- */
 const MOSAIC_TILES = [
   ['#1a2a4a', 'ALA'], ['#2a1a1a', 'UGA'], ['#1a2a1a', 'MSU'],
-  ['#2a2a1a', 'LSU'], ['#1a1a2a', 'OU' ], ['#2a1a2a', 'OSU'],
+  ['#2a2a1a', 'LSU'], ['#1a1a2a', 'OU' ], ['#2a2a1a', 'OSU'],
   ['#1a3a2a', 'ND' ], ['#3a1a1a', 'TEX'], ['#1a1a3a', 'UNC'],
   ['#2a3a1a', 'USC'], ['#3a2a1a', 'AUB'], ['#1a2a3a', 'PSU'],
   ['#2a1a3a', 'MIA'], ['#3a1a2a', 'TEN'], ['#1a3a1a', 'ORE'],
@@ -61,8 +60,6 @@ function buildMosaicTiles() {
    ---------------------------------------------------------- */
 function timeAgo(dateStr) {
   if (!dateStr) return '';
-  // rss2json returns "YYYY-MM-DD HH:MM:SS" with no timezone — append Z to
-  // force UTC parsing so articles published today don't appear as future dates
   const normalized = dateStr.includes('T') || dateStr.endsWith('Z')
     ? dateStr
     : dateStr.replace(' ', 'T') + 'Z';
@@ -85,15 +82,15 @@ function timeAgo(dateStr) {
 function loadingRows(count = 5) {
   return Array.from({ length: count }, () => `
     <div class="home-list-row home-list-row--loading">
-      <span class="home-list-label" style="opacity:0.3;font-style:italic">Loading…</span>
+      <span class="home-list-label" style="opacity:0.3;font-style:italic">Loading\u2026</span>
     </div>
   `).join('');
 }
 
 /* ----------------------------------------------------------
    errorHTML
-   Inline error message displayed inside a card when a fetch fails.
-   Never crashes the page — each section fails independently.
+   Inline error message displayed inside a card when a fetch
+   fails. Never crashes the page — each section fails alone.
    ---------------------------------------------------------- */
 function errorHTML(message) {
   return `
@@ -108,18 +105,43 @@ function errorHTML(message) {
 
 /* ----------------------------------------------------------
    setSection
-   Helper: find a section container by ID and replace its
-   inner content. No-ops if the element is gone (navigated away).
+   Finds a section container by ID and replaces its innerHTML.
+   No-ops if the element has been removed (user navigated away).
    ---------------------------------------------------------- */
 function setSection(id, html) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = html;
 }
 
+/* ----------------------------------------------------------
+   _schoolLink
+   Wraps a CFBD school name in a .school-link <span>.
+   Looks up the school's conference from SCHOOLS_DATA so the
+   CSS tooltip can show "School · Conference" on hover.
+   The delegated click listener in app.js handles navigation.
+
+   @param {string} cfbdName    — CFBD school name, e.g. 'Texas'
+   @param {string} [innerHtml] — optional custom inner HTML
+                                 (e.g. rank prefix already included)
+   @returns {string} — HTML string
+   ---------------------------------------------------------- */
+function _schoolLink(cfbdName, innerHtml) {
+  /* Look up conference from the SCHOOLS_DATA global */
+  const entry   = (SCHOOLS_DATA && SCHOOLS_DATA.teams || []).find(function (t) {
+    return t.name.replace(t.mascot, '').trim() === cfbdName;
+  });
+  const conf    = entry ? entry.conference : '';
+  const tooltip = conf ? `${cfbdName} \u00b7 ${conf}` : cfbdName;
+  const label   = innerHtml !== undefined ? innerHtml : cfbdName;
+
+  return `<span class="school-link" data-team="${cfbdName}" data-tooltip="${tooltip}">${label}</span>`;
+}
+
 /* =============================================================
    DATA RENDERERS
-   Each function receives the raw API data for its section and
-   returns an HTML string ready to inject into the list container.
+   Each function receives raw API data and returns an HTML string.
+   School names are wrapped in .school-link spans so the delegated
+   click handler in app.js can navigate to the school page.
    ============================================================= */
 
 /* ----------------------------------------------------------
@@ -128,7 +150,6 @@ function setSection(id, html) {
    Finds the most recent week with an "AP Top 25" poll entry.
    ---------------------------------------------------------- */
 function renderTop25(rankingsData) {
-  // Rankings come back newest-first; find first entry with AP Top 25
   for (const week of rankingsData) {
     const apPoll = week.polls?.find(p => p.poll === 'AP Top 25');
     if (!apPoll || !apPoll.ranks?.length) continue;
@@ -139,8 +160,8 @@ function renderTop25(rankingsData) {
       .map(r => `
         <div class="home-list-row">
           <span class="home-list-rank">${r.rank}</span>
-          <span class="home-list-label">${r.school}</span>
-          ${r.wins != null ? `<span class="home-list-meta">${r.wins}–${r.losses}</span>` : ''}
+          <span class="home-list-label">${_schoolLink(r.school)}</span>
+          ${r.wins != null ? `<span class="home-list-meta">${r.wins}\u2013${r.losses}</span>` : ''}
         </div>
       `).join('');
   }
@@ -149,12 +170,11 @@ function renderTop25(rankingsData) {
 
 /* ----------------------------------------------------------
    renderGames
-   Receives the full games array for the current week.
-   Filters to ranked matchups only, sorts by best combined rank.
+   Receives all games for the current week. Filters to ranked
+   matchups, sorts by best combined rank. Both team names are
+   wrapped in .school-link spans.
    ---------------------------------------------------------- */
 function renderGames(gamesData) {
-  // Prefer ranked matchups; fall back to highest-scoring games if rank
-  // data is absent (can happen if rankings haven't synced for the week)
   const ranked = gamesData.filter(g => g.homeRank != null || g.awayRank != null);
 
   const displayGames = ranked.length
@@ -175,22 +195,23 @@ function renderGames(gamesData) {
   }
 
   return displayGames.map(g => {
-    const awayRk = g.awayRank ? `<span style="opacity:0.5">#${g.awayRank}</span> ` : '';
-    const homeRk = g.homeRank ? `<span style="opacity:0.5">#${g.homeRank}</span> ` : '';
-    const atSign = `<span style="opacity:0.35"> @ </span>`;
+    const awayRk  = g.awayRank ? `<span style="opacity:0.5">#${g.awayRank}</span> ` : '';
+    const homeRk  = g.homeRank ? `<span style="opacity:0.5">#${g.homeRank}</span> ` : '';
+    const atSign  = `<span style="opacity:0.35"> @ </span>`;
 
-    // Format start date/time if available
     let timeStr = '';
     if (g.startDate) {
       const d = new Date(g.startDate);
       timeStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
 
-    const network = g.tvBroadcast || g.tv || '';
+    const network  = g.tvBroadcast || g.tv || '';
+    const awayLink = _schoolLink(g.awayTeam, `${awayRk}${g.awayTeam}`);
+    const homeLink = _schoolLink(g.homeTeam, `${homeRk}${g.homeTeam}`);
 
     return `
       <div class="home-list-row">
-        <span class="home-list-label">${awayRk}${g.awayTeam}${atSign}${homeRk}${g.homeTeam}</span>
+        <span class="home-list-label">${awayLink}${atSign}${homeLink}</span>
         ${timeStr  ? `<span class="home-list-meta">${timeStr}</span>` : ''}
         ${network  ? `<span class="home-list-meta" style="min-width:40px;text-align:right">${network}</span>` : ''}
       </div>
@@ -220,16 +241,16 @@ function renderNews(newsItems) {
 
 /* ----------------------------------------------------------
    renderHistory
-   Receives games array from HISTORY_YEAR / CURRENT_WEEK.
-   Picks the single most notable game (highest combined ranking
-   or highest points scored) and formats it as a fact card.
+   Receives games from HISTORY_YEAR / CURRENT_WEEK.
+   Picks the most notable game and formats it as a fact card.
+   Both team names in the fact sentence are school links.
    ---------------------------------------------------------- */
 function renderHistory(gamesData) {
   if (!gamesData.length) {
     return errorHTML(`No games found for Week ${CURRENT_WEEK}, ${HISTORY_YEAR}.`);
   }
 
-  // Prefer a ranked matchup; otherwise take the highest-scoring game
+  /* Prefer a ranked matchup; otherwise take the highest-scoring game */
   const ranked = gamesData
     .filter(g => g.homeRank != null || g.awayRank != null)
     .sort((a, b) => {
@@ -242,7 +263,6 @@ function renderHistory(gamesData) {
     ((b.homePoints || 0) + (b.awayPoints || 0)) - ((a.homePoints || 0) + (a.awayPoints || 0))
   )[0];
 
-  // Build the fact sentence
   const homeWon  = (game.homePoints ?? 0) > (game.awayPoints ?? 0);
   const winner   = homeWon ? game.homeTeam : game.awayTeam;
   const loser    = homeWon ? game.awayTeam : game.homeTeam;
@@ -250,24 +270,27 @@ function renderHistory(gamesData) {
   const losScore = homeWon ? game.awayPoints : game.homePoints;
 
   const scoreStr = (winScore != null && losScore != null)
-    ? ` ${winScore}–${losScore}`
+    ? ` ${winScore}\u2013${losScore}`
     : '';
+
+  const winnerLink = _schoolLink(winner);
+  const loserLink  = _schoolLink(loser);
 
   const rankNote = (() => {
     const wr = homeWon ? game.homeRank : game.awayRank;
     const lr = homeWon ? game.awayRank : game.homeRank;
-    if (wr && lr) return ` #${wr} ${winner} defeated #${lr} ${loser}`;
-    if (wr)       return ` #${wr} ${winner} defeated ${loser}`;
-    return ` ${winner} defeated ${loser}`;
+    if (wr && lr) return ` #${wr} ${winnerLink} defeated #${lr} ${loserLink}`;
+    if (wr)       return ` #${wr} ${winnerLink} defeated ${loserLink}`;
+    return ` ${winnerLink} defeated ${loserLink}`;
   })();
 
   const sentence = `${HISTORY_YEAR}, Week ${CURRENT_WEEK}:${rankNote}${scoreStr}.`;
 
   return `
     <div style="font-family:var(--font-serif);font-size:0.95rem;line-height:1.6;color:var(--text-primary);font-style:italic">
-      "${sentence}"
+      \u201c${sentence}\u201d
     </div>
-    <div class="home-list-meta" style="margin-top:6px">— ${HISTORY_YEAR} Season, Week ${CURRENT_WEEK}</div>
+    <div class="home-list-meta" style="margin-top:6px">\u2014 ${HISTORY_YEAR} Season, Week ${CURRENT_WEEK}</div>
   `;
 }
 
@@ -275,13 +298,13 @@ function renderHistory(gamesData) {
    renderCFP
    Receives the full rankings API response.
    Tries "College Football Playoff" poll first; falls back to
-   "AP Top 25" if CFP data isn't available yet (early season).
+   AP Top 25 if CFP data isn't available yet (early season).
+   School names are wrapped in .school-link spans.
    ---------------------------------------------------------- */
 function renderCFP(rankingsData) {
   let pollName = 'College Football Playoff';
   let pollData = null;
 
-  // Find most recent week with CFP data
   for (const week of rankingsData) {
     const cfp = week.polls?.find(p => p.poll === 'College Football Playoff');
     if (cfp?.ranks?.length) {
@@ -290,7 +313,6 @@ function renderCFP(rankingsData) {
     }
   }
 
-  // Fall back to AP Top 25 if CFP not available
   if (!pollData) {
     pollName = 'AP Top 25 (CFP N/A)';
     for (const week of rankingsData) {
@@ -306,14 +328,13 @@ function renderCFP(rankingsData) {
     return errorHTML('No ranking data available.');
   }
 
-  // CFP shows top 25 but we cap display at 12 for card height
   const displayRanks = pollData.ranks.slice().sort((a, b) => a.rank - b.rank).slice(0, 12);
 
   return displayRanks.map(r => `
     <div class="home-list-row">
       <span class="home-list-rank">${r.rank}</span>
-      <span class="home-list-label">${r.school}</span>
-      ${r.wins != null ? `<span class="home-list-meta">${r.wins}–${r.losses}</span>` : ''}
+      <span class="home-list-label">${_schoolLink(r.school)}</span>
+      ${r.wins != null ? `<span class="home-list-meta">${r.wins}\u2013${r.losses}</span>` : ''}
     </div>
   `).join('');
 }
@@ -330,7 +351,7 @@ const HomePage = {
      router injects this string into #page-content.
      ---------------------------------------------------------- */
   render() {
-    // Mount mosaic into dedicated root outside the app shell
+    /* Mount mosaic into dedicated root outside the app shell */
     const mosaicRoot = document.getElementById('mosaic-root');
     if (mosaicRoot) {
       mosaicRoot.innerHTML = `
@@ -341,8 +362,7 @@ const HomePage = {
       `;
     }
 
-    // Queue data loading for after innerHTML is set
-    Promise.resolve().then(() => HomePage.loadData());
+    Promise.resolve().then(function () { HomePage.loadData(); });
 
     return `
       <!-- Hero -->
@@ -362,7 +382,7 @@ const HomePage = {
 
         <!-- Top Games of Week -->
         <div class="home-card home-card--games">
-          <div class="home-card-title">Top Games — Week ${CURRENT_WEEK}, ${CURRENT_YEAR}</div>
+          <div class="home-card-title">Top Games \u2014 Week ${CURRENT_WEEK}, ${CURRENT_YEAR}</div>
           <div class="home-list" id="section-games">${loadingRows(4)}</div>
         </div>
 
@@ -403,37 +423,37 @@ const HomePage = {
         fetchGames(HISTORY_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' }),
       ]);
 
-    // AP Top 25
+    /* AP Top 25 */
     if (rankingsResult.status === 'fulfilled') {
       setSection('section-top25', renderTop25(rankingsResult.value));
     } else {
       setSection('section-top25', errorHTML(rankingsResult.reason?.message || 'Fetch failed'));
     }
 
-    // Top Games
+    /* Top Games */
     if (gamesResult.status === 'fulfilled') {
       setSection('section-games', renderGames(gamesResult.value));
     } else {
       setSection('section-games', errorHTML(gamesResult.reason?.message || 'Fetch failed'));
     }
 
-    // CFB News
+    /* CFB News */
     if (newsResult.status === 'fulfilled') {
       setSection('section-news', renderNews(newsResult.value));
     } else {
       setSection('section-news', errorHTML(newsResult.reason?.message || 'Fetch failed'));
     }
 
-    // CFB History
+    /* CFB History */
     if (historyResult.status === 'fulfilled') {
       setSection('section-fact', renderHistory(historyResult.value));
     } else {
       setSection('section-fact', errorHTML(historyResult.reason?.message || 'Fetch failed'));
     }
 
-    // CFP Rankings (reuses rankings data, updates title if fallback used)
+    /* CFP Rankings — reuses rankings data, updates title if AP fallback used */
     if (rankingsResult.status === 'fulfilled') {
-      const data  = rankingsResult.value;
+      const data   = rankingsResult.value;
       const hasCFP = data.some(w => w.polls?.some(p =>
         p.poll === 'College Football Playoff' && p.ranks?.length
       ));
