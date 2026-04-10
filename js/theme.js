@@ -149,3 +149,88 @@ function resetTheme() {
   root.style.setProperty('--school-secondary', '#ffffff');
   root.style.setProperty('--school-accent',    '#3a4060');
 }
+
+/* =============================================================
+   Phase 11a — Dynamic Theming Helpers
+   Added below. All functions above are untouched.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   _normalizeHex
+   Accepts a raw color string from CFBD and returns a clean
+   #RRGGBB string, or '' if the value is unrecognizable.
+   CFBD sometimes returns hex values without the # prefix
+   (e.g. "BF5700" instead of "#BF5700") — both are handled.
+
+   @param {string} raw — raw color value from the CFBD API
+   @returns {string} — normalized '#RRGGBB' or empty string
+   ---------------------------------------------------------- */
+function _normalizeHex(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (/^#[0-9a-f]{3,6}$/i.test(trimmed)) return trimmed;        // already valid
+  if (/^[0-9a-f]{6}$/i.test(trimmed))    return '#' + trimmed;  // missing #
+  return '';                                                      // unrecognizable
+}
+
+/* ----------------------------------------------------------
+   _hexBrightness
+   Computes perceived brightness of a hex color using the
+   W3C / ITU-R BT.601 formula. Returns a value on 0–255 scale.
+   Used to reject colors too dark to distinguish from the
+   dark UI background.
+
+   @param {string} hex — valid hex string, e.g. '#BF5700'
+   @returns {number} — brightness 0 (black) to 255 (white)
+   ---------------------------------------------------------- */
+function _hexBrightness(hex) {
+  const expanded = hex.replace(
+    /^#([a-f\d])([a-f\d])([a-f\d])$/i,
+    (_, r, g, b) => `#${r}${r}${g}${g}${b}${b}`
+  );
+  const r = parseInt(expanded.slice(1, 3), 16);
+  const g = parseInt(expanded.slice(3, 5), 16);
+  const b = parseInt(expanded.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+/* ----------------------------------------------------------
+   applyThemeFromTeam
+   Validates and applies school colors from a CFBD team object.
+   Called by school.js after fetchTeamInfo() resolves — overrides
+   the sync restoreTheme() defaults with live CFBD data.
+
+   Validation rules:
+     Primary missing or falsy        → fallback #4a5568
+     Primary brightness < 40         → fallback #4a5568
+       (prevents near-black colors blending into dark UI)
+     Secondary missing or falsy      → fallback #FFFFFF
+     |brightness(secondary) - brightness(primary)| < 30
+                                     → fallback #FFFFFF
+       (ensures enough contrast between the two school colors)
+
+   @param {Object} teamObj — CFBD team object from fetchTeamInfo()
+   ---------------------------------------------------------- */
+function applyThemeFromTeam(teamObj) {
+  const FALLBACK_PRIMARY   = '#4a5568';
+  const FALLBACK_SECONDARY = '#FFFFFF';
+  const MIN_PRIMARY_BRIGHTNESS = 40;
+  const MIN_CONTRAST_DELTA     = 30;
+
+  /* Normalize raw strings — CFBD inconsistently includes '#' */
+  let primary   = _normalizeHex(teamObj && teamObj.color     ? teamObj.color     : '');
+  let secondary = _normalizeHex(teamObj && teamObj.alt_color ? teamObj.alt_color : '');
+
+  /* Validate primary — reject missing or too-dark colors */
+  if (!primary || _hexBrightness(primary) < MIN_PRIMARY_BRIGHTNESS) {
+    primary = FALLBACK_PRIMARY;
+  }
+
+  /* Validate secondary — reject missing or colors too close to primary */
+  if (!secondary || Math.abs(_hexBrightness(secondary) - _hexBrightness(primary)) < MIN_CONTRAST_DELTA) {
+    secondary = FALLBACK_SECONDARY;
+  }
+
+  /* Delegate to existing applyTheme — saves to localStorage automatically */
+  applyTheme(primary, secondary);
+}

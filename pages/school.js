@@ -1205,6 +1205,15 @@ const SchoolPage = {
     const priorCompleted = _completedGames(priorGames);
     const hasGames       = completed.length > 0;
 
+    /* Apply live CFBD team colors before any section renders.
+       Must run before _loadAnalyticsData so _loadCampusMap reads
+       the correct --school-primary value for the map pin.
+       Falls back to restoreTheme() values (already applied by the
+       router) if teamInfo is null or fetchTeamInfo failed. */
+    if (teamInfo) {
+      applyThemeFromTeam(teamInfo);
+    }
+
     _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo);
     _loadAnalyticsData(completed, hasGames, lines, priorCompleted);
   },

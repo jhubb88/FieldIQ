@@ -161,22 +161,43 @@ function _cacheGet(key) {
 
 /* ----------------------------------------------------------
    fetchTeamInfo
-   Returns team metadata: colors, abbreviation, mascot.
-   Fetches all FBS teams once and filters client-side.
+   Returns team metadata: colors, abbreviation, mascot, logos.
    CFBD field names: color (primary), alt_color (secondary).
-   Cached indefinitely — team metadata rarely changes.
+
+   Caching — two layers:
+     1. localStorage key teamInfo_${school}: survives page reloads,
+        never expires. Checked first so refreshes need zero API calls.
+     2. In-memory _apiCache key teamInfo:fbs: holds the full FBS
+        team list for the session so multiple schools in one visit
+        share a single API call.
 
    @param {string} school — e.g. 'Texas'
    @returns {Promise<Object|null>} — team object or null if not found
    ---------------------------------------------------------- */
 async function fetchTeamInfo(school) {
+  /* --- Layer 1: localStorage (survives page reloads) --- */
+  const lsKey    = 'teamInfo_' + school;
+  const lsCached = localStorage.getItem(lsKey);
+  if (lsCached) {
+    try { return JSON.parse(lsCached); } catch (e) { /* corrupted — fall through to API */ }
+  }
+
+  /* --- Layer 2: in-memory full-list cache (session only) --- */
   const key = 'teamInfo:fbs';
   let teams = _cacheGet(key);
   if (teams === undefined) {
     teams = await cfbdFetch('/teams', { division: 'fbs' });
-    _cacheSet(key, teams, null); // cache indefinitely
+    _cacheSet(key, teams, null); // cache indefinitely for this session
   }
-  return teams.find(t => t.school === school) || null;
+
+  const teamObj = teams.find(t => t.school === school) || null;
+
+  /* Persist per-school object to localStorage for reload recall */
+  if (teamObj) {
+    try { localStorage.setItem(lsKey, JSON.stringify(teamObj)); } catch (e) { /* storage full */ }
+  }
+
+  return teamObj;
 }
 
 /* ----------------------------------------------------------
