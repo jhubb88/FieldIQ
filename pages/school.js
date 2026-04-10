@@ -1118,11 +1118,10 @@ const SchoolPage = {
      back to a safe empty value and updates independently.
      ---------------------------------------------------------- */
   async loadData() {
-    /* Load static school data from JSON before firing API calls */
+    /* Load static school data from SCHOOLS_DATA global (data/schools.js).
+       Using a global avoids fetch() CORS failures on file:// origins. */
     try {
-      const resp  = await fetch('data/schools.json');
-      const json  = await resp.json();
-      _schoolData = (json.teams || []).find(function (t) { return t.id === SCHOOL_ID; }) || null;
+      _schoolData = (SCHOOLS_DATA.teams || []).find(function (t) { return t.id === SCHOOL_ID; }) || null;
     } catch (e) {
       _schoolData = null;
     }
