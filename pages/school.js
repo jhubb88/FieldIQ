@@ -33,6 +33,13 @@ const SCHOOL_ID = 'texas';
 let _schoolData = null;
 
 /* ----------------------------------------------------------
+   H2H Search State
+   _h2hSearchInitialized prevents re-binding input events
+   when the user navigates back to the H2H section.
+   ---------------------------------------------------------- */
+let _h2hSearchInitialized = false;
+
+/* ----------------------------------------------------------
    Section definitions
    Single source of truth for sidebar nav order, IDs, labels,
    and which build phase delivers real content.
@@ -71,6 +78,11 @@ function toggleSection(sectionId) {
     setTimeout(function () {
       window._campusMapInline.invalidateSize();
     }, 100);
+  }
+
+  /* H2H search input is bound once, lazily, on first visit to the section. */
+  if (sectionId === 'h2h') {
+    setTimeout(function () { _initH2HSearch(); }, 50);
   }
 }
 
@@ -999,6 +1011,50 @@ function renderMarketSection() {
 }
 
 /* ----------------------------------------------------------
+   renderH2HSection
+   Returns the H2H Search section wrapper.
+   Team 1 is pre-filled with the current school (read from
+   SCHOOLS_DATA directly — available synchronously before
+   loadData() fires). Team 2 is a live-filtered search input.
+   Results are injected into #h2h-results by _loadH2HData().
+   ---------------------------------------------------------- */
+function renderH2HSection() {
+  const team1Entry       = (SCHOOLS_DATA.teams || []).find(function (t) { return t.id === SCHOOL_ID; });
+  const team1DisplayName = team1Entry ? team1Entry.name : SCHOOL_NAME;
+
+  return `
+    <div class="school-section" data-section="h2h">
+      <h2 class="school-section-title">H2H Search</h2>
+
+      <!-- Team selector row — Team 1 is locked, Team 2 is searchable -->
+      <div class="h2h-selector">
+        <div class="h2h-team">
+          <div class="h2h-team-label">Team 1</div>
+          <div class="h2h-team-name">${team1DisplayName}</div>
+        </div>
+        <div class="h2h-vs">vs</div>
+        <div class="h2h-team">
+          <div class="h2h-team-label">Team 2</div>
+          <div class="h2h-search-wrap">
+            <input
+              id="h2h-search-input"
+              class="h2h-search-input"
+              type="text"
+              placeholder="Search opponent\u2026"
+              autocomplete="off"
+            />
+            <div class="h2h-dropdown" id="h2h-dropdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results injected here after both teams are selected -->
+      <div id="h2h-results"></div>
+
+    </div>`;
+}
+
+/* ----------------------------------------------------------
    renderCampusMapSection
    Returns the Campus Map section wrapper. Contains:
      - An inline map div (340px tall) showing the stadium pin
@@ -1060,6 +1116,7 @@ function renderSections() {
     if (section.id === 'situational')  return renderSituationalSection();
     if (section.id === 'market')       return renderMarketSection();
     if (section.id === 'campus-map')   return renderCampusMapSection();
+    if (section.id === 'h2h')          return renderH2HSection();
     return renderPlaceholderSection(section);
   }).join('');
 }
@@ -1388,4 +1445,494 @@ function _openMapModal() {
 function _closeMapModal() {
   const modal = document.getElementById('campus-map-modal');
   if (modal) modal.classList.remove('is-open');
+}
+
+/* =============================================================
+   Phase 10 — H2H Search
+   Functions below handle team search, data fetching, stat
+   computation, and rendering for the H2H section.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   _h2hSchoolToCfbd
+   Derives the CFBD-compatible school name (e.g. "Texas") from
+   a schools.json entry by stripping the mascot from the full
+   display name (e.g. "Texas Longhorns" → "Texas").
+
+   @param {Object} entry — schools.json team entry
+   @returns {string} — CFBD school name
+   ---------------------------------------------------------- */
+function _h2hSchoolToCfbd(entry) {
+  return entry.name.replace(entry.mascot, '').trim();
+}
+
+/* ----------------------------------------------------------
+   _initH2HSearch
+   Binds the Team 2 search input to filter SCHOOLS_DATA in
+   memory as the user types. Called once (guarded by
+   _h2hSearchInitialized) when the user first opens the H2H
+   section. No API call is made during search — all filtering
+   is client-side against the local schools.json global.
+   ---------------------------------------------------------- */
+function _initH2HSearch() {
+  if (_h2hSearchInitialized) return;
+  _h2hSearchInitialized = true;
+
+  const input    = document.getElementById('h2h-search-input');
+  const dropdown = document.getElementById('h2h-dropdown');
+  if (!input || !dropdown) return;
+
+  const allSchools = (SCHOOLS_DATA.teams || []);
+
+  /* Filter schools as the user types — minimum 2 chars */
+  input.addEventListener('input', function () {
+    const q = input.value.trim().toLowerCase();
+    dropdown.innerHTML = '';
+
+    if (q.length < 2) {
+      dropdown.classList.remove('is-open');
+      return;
+    }
+
+    const matches = allSchools
+      .filter(function (s) {
+        return s.id !== SCHOOL_ID && s.name.toLowerCase().includes(q);
+      })
+      .slice(0, 8);
+
+    if (matches.length === 0) {
+      dropdown.classList.remove('is-open');
+      return;
+    }
+
+    matches.forEach(function (entry) {
+      const item = document.createElement('div');
+      item.className    = 'h2h-dropdown-item';
+      item.textContent  = entry.name;
+      item.addEventListener('click', function () {
+        input.value = entry.name;
+        dropdown.classList.remove('is-open');
+        dropdown.innerHTML = '';
+        _loadH2HData(entry);
+      });
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.add('is-open');
+  });
+
+  /* Close dropdown when clicking outside the search wrapper */
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.h2h-search-wrap')) {
+      dropdown.classList.remove('is-open');
+    }
+  });
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeRecord
+   Tallies all-time W-L-T for team1 across all matchups.
+
+   @param {Array}  matchups — completed games between the two teams
+   @param {string} team1    — CFBD school name for team 1
+   @returns {{ wins, losses, ties, total }}
+   ---------------------------------------------------------- */
+function _h2hComputeRecord(matchups, team1) {
+  let wins = 0, losses = 0, ties = 0;
+  matchups.forEach(function (g) {
+    const isHome = g.homeTeam === team1;
+    const t1Pts  = isHome ? g.homePoints : g.awayPoints;
+    const t2Pts  = isHome ? g.awayPoints : g.homePoints;
+    if      (t1Pts > t2Pts) wins++;
+    else if (t1Pts < t2Pts) losses++;
+    else                    ties++;
+  });
+  return { wins, losses, ties, total: matchups.length };
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeLast5
+   Returns up to the 5 most recent matchups, newest first.
+   Each entry carries the display year, result label (W/L/T),
+   score string, and site label (Home / Away / Neutral).
+
+   @param {Array}  matchups — completed games, sorted oldest→newest
+   @param {string} team1    — CFBD school name for team 1
+   @returns {Array<{ year, result, score, site, won, tied }>}
+   ---------------------------------------------------------- */
+function _h2hComputeLast5(matchups, team1) {
+  return matchups.slice(-5).reverse().map(function (g) {
+    const isHome = g.homeTeam === team1;
+    const t1Pts  = isHome ? g.homePoints : g.awayPoints;
+    const t2Pts  = isHome ? g.awayPoints : g.homePoints;
+    const won    = t1Pts > t2Pts;
+    const tied   = t1Pts === t2Pts;
+    const year   = new Date(g.startDate).getFullYear();
+    const site   = g.neutralSite ? 'Neutral' : (isHome ? 'Home' : 'Away');
+    const result = tied ? 'T' : (won ? 'W' : 'L');
+    const score  = `${t1Pts}\u2013${t2Pts}`;
+    return { year, result, score, site, won, tied };
+  });
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeDecades
+   Groups W-L-T totals by decade (1990s, 2000s, etc.).
+   Decade is derived from the calendar year of the game date.
+
+   @param {Array}  matchups — completed games
+   @param {string} team1    — CFBD school name for team 1
+   @returns {Array<{ decade, wins, losses, ties }>} sorted oldest first
+   ---------------------------------------------------------- */
+function _h2hComputeDecades(matchups, team1) {
+  const map = {};
+  matchups.forEach(function (g) {
+    const year   = new Date(g.startDate).getFullYear();
+    const decade = Math.floor(year / 10) * 10;
+    const isHome = g.homeTeam === team1;
+    const t1Pts  = isHome ? g.homePoints : g.awayPoints;
+    const t2Pts  = isHome ? g.awayPoints : g.homePoints;
+
+    if (!map[decade]) map[decade] = { wins: 0, losses: 0, ties: 0 };
+    if      (t1Pts > t2Pts) map[decade].wins++;
+    else if (t1Pts < t2Pts) map[decade].losses++;
+    else                    map[decade].ties++;
+  });
+
+  return Object.keys(map).sort().map(function (d) {
+    return { decade: Number(d), wins: map[d].wins, losses: map[d].losses, ties: map[d].ties };
+  });
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeAvgScore
+   Calculates average points scored and allowed by team1
+   across all matchups.
+
+   @param {Array}  matchups — completed games
+   @param {string} team1    — CFBD school name for team 1
+   @returns {{ scored: string, allowed: string }} — one decimal each
+   ---------------------------------------------------------- */
+function _h2hComputeAvgScore(matchups, team1) {
+  if (matchups.length === 0) return { scored: '\u2014', allowed: '\u2014' };
+  let totalScored = 0, totalAllowed = 0;
+  matchups.forEach(function (g) {
+    const isHome   = g.homeTeam === team1;
+    totalScored  += isHome ? g.homePoints : g.awayPoints;
+    totalAllowed += isHome ? g.awayPoints : g.homePoints;
+  });
+  return {
+    scored:  (totalScored  / matchups.length).toFixed(1),
+    allowed: (totalAllowed / matchups.length).toFixed(1),
+  };
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeATS
+   Matches CFBD lines data to each matchup game and computes
+   how often team1 covered the spread. Returns null if fewer
+   than one game had line data available.
+
+   CFBD spread is from the home team's perspective (negative
+   means home is favored). Team1 ATS margin = (t1Pts - t2Pts)
+   adjusted for the spread from team1's perspective.
+
+   @param {Array}  matchups   — completed games between the teams
+   @param {Object} linesByYear — { year: linesArray } keyed by season year
+   @param {string} team1      — CFBD school name for team 1
+   @returns {{ covers, losses, pushes, total } | null}
+   ---------------------------------------------------------- */
+function _h2hComputeATS(matchups, linesByYear, team1) {
+  let covers = 0, losses = 0, pushes = 0;
+
+  matchups.forEach(function (g) {
+    const year      = new Date(g.startDate).getFullYear();
+    const linesArr  = linesByYear[year] || [];
+
+    /* Find the lines entry for this specific game by CFBD game id */
+    const gameLines = linesArr.find(function (l) { return l.id === g.id; });
+    if (!gameLines || !Array.isArray(gameLines.lines)) return;
+
+    /* Use the first provider that has a non-null spread */
+    const line = gameLines.lines.find(function (l) { return l.spread !== null && l.spread !== undefined; });
+    if (!line) return;
+
+    const isHome = g.homeTeam === team1;
+    const t1Pts  = isHome ? g.homePoints : g.awayPoints;
+    const t2Pts  = isHome ? g.awayPoints : g.homePoints;
+    const margin = t1Pts - t2Pts;
+
+    /* CFBD spread is home-team-perspective; flip if team1 is away */
+    const spread  = isHome ? parseFloat(line.spread) : -parseFloat(line.spread);
+    const covered = margin + spread;
+
+    if (Math.abs(covered) < 0.01) pushes++;
+    else if (covered > 0)         covers++;
+    else                          losses++;
+  });
+
+  const total = covers + losses + pushes;
+  return total > 0 ? { covers, losses, pushes, total } : null;
+}
+
+/* ----------------------------------------------------------
+   _h2hComputeStreaks
+   Computes the longest consecutive win streak in the series
+   for each team. Ties reset both streak counters.
+
+   @param {Array}  matchups — completed games, sorted oldest→newest
+   @param {string} team1    — CFBD school name for team 1
+   @returns {{ t1Best: number, t2Best: number }}
+   ---------------------------------------------------------- */
+function _h2hComputeStreaks(matchups, team1) {
+  let t1Best = 0, t2Best = 0, t1Cur = 0, t2Cur = 0;
+  matchups.forEach(function (g) {
+    const isHome = g.homeTeam === team1;
+    const t1Pts  = isHome ? g.homePoints : g.awayPoints;
+    const t2Pts  = isHome ? g.awayPoints : g.homePoints;
+    if (t1Pts > t2Pts) {
+      t1Cur++;
+      t2Cur = 0;
+      t1Best = Math.max(t1Best, t1Cur);
+    } else if (t2Pts > t1Pts) {
+      t2Cur++;
+      t1Cur = 0;
+      t2Best = Math.max(t2Best, t2Cur);
+    } else {
+      t1Cur = 0;
+      t2Cur = 0;
+    }
+  });
+  return { t1Best, t2Best };
+}
+
+/* ----------------------------------------------------------
+   renderH2HResults
+   Builds the full H2H results HTML from computed data.
+   Six subsections separated by dividers — ATS is silently
+   omitted when no lines data is available.
+
+   @param {Object} data — computed H2H stats object
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderH2HResults(data) {
+  const { team1Display, team2Display, record, last5, decades, avgScore, ats, streaks } = data;
+
+  /* --- All-time record --- */
+  const tiesStr = record.ties > 0 ? `\u2013${record.ties}` : '';
+  const recordCards = `
+    <h3 class="school-section-title">All-Time Series Record (1990\u20132025)</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">${team1Display}</div>
+        <div class="stat-card-value">${record.wins}\u2013${record.losses}${tiesStr}</div>
+        <div class="stat-card-sub">${record.total} game${record.total !== 1 ? 's' : ''} in series</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">${team2Display}</div>
+        <div class="stat-card-value">${record.losses}\u2013${record.wins}${tiesStr}</div>
+        <div class="stat-card-sub">${record.total} game${record.total !== 1 ? 's' : ''} in series</div>
+      </div>
+    </div>`;
+
+  /* --- Last 5 matchups --- */
+  const last5Rows = last5.map(function (g) {
+    const color = g.tied ? '' : (g.won ? 'color: var(--school-primary)' : 'color: var(--color-loss)');
+    return `
+      <div class="home-list-row">
+        <span class="home-list-rank">${g.year}</span>
+        <span class="home-list-label">${g.site}</span>
+        <span class="home-list-meta" style="${color}">${g.result} ${g.score}</span>
+      </div>`;
+  }).join('');
+  const last5Section = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Last 5 Matchups</h3>
+    <div class="home-list">${last5Rows}</div>`;
+
+  /* --- By decade --- */
+  const decadeRows = decades.map(function (d) {
+    const t   = d.ties > 0 ? `\u2013${d.ties}` : '';
+    return `
+      <div class="home-list-row">
+        <span class="home-list-label">${d.decade}s</span>
+        <span class="home-list-meta">${team1Display} ${d.wins}\u2013${d.losses}${t}</span>
+      </div>`;
+  }).join('');
+  const decadeSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Series by Decade</h3>
+    <div class="home-list">${decadeRows}</div>`;
+
+  /* --- Average scoring --- */
+  const avgSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Average Scoring in Series</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">${team1Display} Avg Scored</div>
+        <div class="stat-card-value">${avgScore.scored}</div>
+        <div class="stat-card-sub">Points per matchup</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">${team1Display} Avg Allowed</div>
+        <div class="stat-card-value">${avgScore.allowed}</div>
+        <div class="stat-card-sub">Points per matchup</div>
+      </div>
+    </div>`;
+
+  /* --- ATS — silently skipped when no lines data was found --- */
+  let atsSection = '';
+  if (ats !== null) {
+    const pushNote = ats.pushes > 0
+      ? ` \u00b7 ${ats.pushes} push${ats.pushes !== 1 ? 'es' : ''}`
+      : '';
+    atsSection = `
+      <hr class="section-divider">
+      <h3 class="school-section-title">ATS in Series</h3>
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">${team1Display} ATS</div>
+          <div class="stat-card-value">${ats.covers}\u2013${ats.losses}</div>
+          <div class="stat-card-sub">${ats.total} game${ats.total !== 1 ? 's' : ''} with line data${pushNote}</div>
+        </div>
+      </div>`;
+  }
+
+  /* --- Win streaks --- */
+  const streakSection = `
+    <hr class="section-divider">
+    <h3 class="school-section-title">Longest Win Streaks in Series</h3>
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">${team1Display}</div>
+        <div class="stat-card-value">${streaks.t1Best}</div>
+        <div class="stat-card-sub">Consecutive wins in series</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">${team2Display}</div>
+        <div class="stat-card-value">${streaks.t2Best}</div>
+        <div class="stat-card-sub">Consecutive wins in series</div>
+      </div>
+    </div>`;
+
+  return recordCards + last5Section + decadeSection + avgSection + atsSection + streakSection;
+}
+
+/* ----------------------------------------------------------
+   _loadH2HData
+   Orchestrates H2H data loading:
+     1. Check localStorage cache (key: h2h_[teamA]_[teamB])
+     2. Fetch all seasons 1990-2025 for team1 in parallel
+     3. Filter game results client-side for team2 matchups
+     4. Fetch lines only for years with matchups
+     5. Compute stats and cache the result
+
+   Graceful fallback: if no matchups are found, shows a
+   "no matchups" message. If the API is unreachable, shows
+   an inline error.
+
+   @param {Object} team2Entry — schools.json entry for team 2
+   ---------------------------------------------------------- */
+async function _loadH2HData(team2Entry) {
+  const resultsEl = document.getElementById('h2h-results');
+  if (!resultsEl) return;
+  resultsEl.innerHTML = loadingHTML();
+
+  /* CFBD school names for both teams */
+  const team1CfbdName  = SCHOOL_NAME;
+  const team2CfbdName  = _h2hSchoolToCfbd(team2Entry);
+
+  /* Cache key is alphabetically sorted so A-vs-B and B-vs-A share one entry */
+  const [keyA, keyB]   = [team1CfbdName, team2CfbdName].sort();
+  const cacheKey       = `h2h_${keyA}_${keyB}`;
+
+  /* Display names for rendering */
+  const team1Entry     = (SCHOOLS_DATA.teams || []).find(function (t) { return t.id === SCHOOL_ID; });
+  const team1DisplayName = team1Entry ? team1Entry.name : SCHOOL_NAME;
+
+  try {
+    /* --- Cache hit --- */
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      setSection('h2h-results', renderH2HResults(JSON.parse(cached)));
+      return;
+    }
+
+    /* --- Fetch all seasons 1990-2025 for team1 concurrently --- */
+    const years = [];
+    for (let y = 1990; y <= 2025; y++) years.push(y);
+
+    const yearResults = await Promise.allSettled(
+      years.map(function (y) {
+        return cfbdFetch('/games', { year: y, team: team1CfbdName, seasonType: 'both' });
+      })
+    );
+
+    /* --- Collect games and filter for team2 matchups --- */
+    const matchups = [];
+    yearResults.forEach(function (r) {
+      if (r.status !== 'fulfilled' || !Array.isArray(r.value)) return;
+      r.value.forEach(function (g) {
+        const isMatchup =
+          (g.homeTeam === team2CfbdName || g.awayTeam === team2CfbdName) &&
+          g.homePoints !== null && g.homePoints !== undefined &&
+          g.awayPoints !== null && g.awayPoints !== undefined;
+        if (isMatchup) matchups.push(g);
+      });
+    });
+
+    /* --- No games found — show graceful message --- */
+    if (matchups.length === 0) {
+      setSection('h2h-results', `
+        <p class="stat-card-note">
+          No completed matchups found between ${team1DisplayName} and ${team2Entry.name} from 1990\u20132025.
+        </p>`);
+      return;
+    }
+
+    /* Sort chronologically oldest → newest */
+    matchups.sort(function (a, b) { return new Date(a.startDate) - new Date(b.startDate); });
+
+    /* --- Fetch lines only for years that had matchup games --- */
+    const matchupYears = [...new Set(matchups.map(function (g) {
+      return new Date(g.startDate).getFullYear();
+    }))];
+
+    const linesResults = await Promise.allSettled(
+      matchupYears.map(function (y) {
+        return cfbdFetch('/lines', { year: y, team: team1CfbdName });
+      })
+    );
+
+    /* Build year → lines array lookup */
+    const linesByYear = {};
+    linesResults.forEach(function (r, i) {
+      if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+        linesByYear[matchupYears[i]] = r.value;
+      }
+    });
+
+    /* --- Compute all stats --- */
+    const data = {
+      team1:        team1CfbdName,
+      team1Display: team1DisplayName,
+      team2:        team2CfbdName,
+      team2Display: team2Entry.name,
+      record:       _h2hComputeRecord(matchups, team1CfbdName),
+      last5:        _h2hComputeLast5(matchups, team1CfbdName),
+      decades:      _h2hComputeDecades(matchups, team1CfbdName),
+      avgScore:     _h2hComputeAvgScore(matchups, team1CfbdName),
+      ats:          _h2hComputeATS(matchups, linesByYear, team1CfbdName),
+      streaks:      _h2hComputeStreaks(matchups, team1CfbdName),
+    };
+
+    /* --- Cache to localStorage — ignore quota errors --- */
+    try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) { /* storage full */ }
+
+    setSection('h2h-results', renderH2HResults(data));
+
+  } catch (e) {
+    setSection('h2h-results', errorHTML('Could not load H2H data. Check your connection and try again.'));
+  }
 }

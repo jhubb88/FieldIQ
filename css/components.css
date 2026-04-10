@@ -1082,3 +1082,132 @@ body.is-home .page-content {
 .campus-map-modal-close:hover {
   opacity: 0.8;
 }
+
+/* =============================================================
+   Phase 10 — H2H Search UI
+   Styles for the team selector row, search input, and
+   autocomplete dropdown inside the H2H section.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   H2H Selector Row
+   Side-by-side display of Team 1 (locked) and Team 2
+   (searchable), separated by a "vs" glyph.
+   ---------------------------------------------------------- */
+.h2h-selector {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.h2h-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.h2h-team-label {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Pre-filled Team 1 name display */
+.h2h-team-name {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 10px 14px;
+}
+
+/* "vs" separator glyph */
+.h2h-vs {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  padding-top: 26px;
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   H2H Search Input
+   Positioned relatively so the dropdown can attach below it.
+   ---------------------------------------------------------- */
+.h2h-search-wrap {
+  position: relative;
+}
+
+.h2h-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.h2h-search-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.h2h-search-input:focus {
+  border-color: var(--school-primary);
+}
+
+/* ----------------------------------------------------------
+   H2H Autocomplete Dropdown
+   Hidden by default; .is-open shows it. Absolutely positioned
+   below the search input, full width of the search wrapper.
+   ---------------------------------------------------------- */
+.h2h-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.h2h-dropdown.is-open {
+  display: block;
+}
+
+.h2h-dropdown-item {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.h2h-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.h2h-dropdown-item:hover {
+  background: var(--bg-card);
+  color: var(--school-primary);
+}
