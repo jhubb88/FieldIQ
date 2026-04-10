@@ -11,8 +11,8 @@
    Season Constants
    Update these each season. All data fetches use these values.
    ---------------------------------------------------------- */
-const CURRENT_YEAR = 2024;
-const CURRENT_WEEK = 15;
+const CURRENT_YEAR = 2025;
+const CURRENT_WEEK = 1;
 
 /* ----------------------------------------------------------
    History Constants

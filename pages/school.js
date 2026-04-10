@@ -24,25 +24,13 @@ const SCHOOL_NAME = 'Texas';
 const SCHOOL_YEAR = 2024;
 
 /* ----------------------------------------------------------
-   Static Texas Identity Data
-   Fields not available from CFBD (stadium, city, capacity,
-   founded, championships) stay here until Phase 9 builds
-   the full schools.json.
+   School Data
+   Loaded from data/schools.json at runtime in loadData().
+   _schoolData holds the matching entry for SCHOOL_ID.
+   Phase 11 will replace SCHOOL_ID with dynamic selection.
    ---------------------------------------------------------- */
-const TEXAS_STATIC = {
-  displayName:   'Texas Longhorns',
-  conference:    'SEC',          // overwritten by fetchTeamInfo at runtime
-  stadium:       'Darrell K Royal\u2013Texas Memorial Stadium',
-  capacity:      '100,119',
-  city:          'Austin, TX',
-  founded:       1883,
-  championships: '4 national \u00b7 33 conference',
-  coach:         '\u2014',       // overwritten by fetchCoachInfo at runtime
-  coachSeason:   '',
-  coachRecord:   '',
-  lat:           30.2838,        // Darrell K Royal stadium latitude
-  lng:           -97.7326,       // Darrell K Royal stadium longitude
-};
+const SCHOOL_ID = 'texas';
+let _schoolData = null;
 
 /* ----------------------------------------------------------
    Section definitions
@@ -207,23 +195,26 @@ function renderGameCards(lastGame, nextGame) {
    ---------------------------------------------------------- */
 function renderIdentityCard(data) {
   const facts = [
-    { label: 'Conference',    value: data.conference },
-    { label: 'City',          value: data.city },
-    { label: 'Stadium',       value: data.stadium },
-    { label: 'Capacity',      value: data.capacity },
-    { label: 'Founded',       value: data.founded },
-    { label: 'Championships', value: data.championships },
-    { label: 'Head Coach',    value: data.coachSeason ? `${data.coach} \u00b7 ${data.coachSeason}` : data.coach },
-    { label: 'Coach Record',  value: data.coachRecord },
+    { label: 'Conference',   value: data.conference },
+    { label: 'City',         value: data.city },
+    { label: 'Stadium',      value: data.stadium },
+    { label: 'Capacity',     value: data.capacity },
+    { label: 'Founded',      value: data.founded },
+    { label: 'Enrollment',   value: data.enrollment },
+    { label: 'Coach Salary', value: data.coachSalary },
+    { label: 'Head Coach',   value: data.coachSeason ? `${data.coach} \u00b7 ${data.coachSeason}` : data.coach },
+    { label: 'Coach Record', value: data.coachRecord },
   ];
 
-  const factsHTML = facts.map(function (fact) {
-    return `
+  const factsHTML = facts
+    .filter(function (fact) { return fact.value != null && fact.value !== ''; })
+    .map(function (fact) {
+      return `
       <div class="identity-item">
         <div class="identity-item-label">${fact.label}</div>
         <div class="identity-item-value">${fact.value}</div>
       </div>`;
-  }).join('');
+    }).join('');
 
   return `
     <div class="identity-card">
@@ -884,8 +875,25 @@ function _deriveNextGame(school, games, lines) {
    @returns {Object} — ready for renderIdentityCard()
    ---------------------------------------------------------- */
 function _deriveIdentity(teamInfo, coachInfo) {
-  const data = Object.assign({}, TEXAS_STATIC);
+  /* Base from schools.json — falls back to Texas defaults if fetch failed */
+  const src  = _schoolData || {};
+  const data = {
+    displayName:  src.name        || 'Texas Longhorns',
+    conference:   src.conference  || 'SEC',
+    stadium:      src.stadium     || '\u2014',
+    capacity:     src.stadiumCapacity ? src.stadiumCapacity.toLocaleString() : '\u2014',
+    city:         src.city && src.state ? `${src.city}, ${src.state}` : (src.city || '\u2014'),
+    founded:      src.founded     || '\u2014',
+    enrollment:   src.enrollment  ? src.enrollment.toLocaleString() : '\u2014',
+    coachSalary:  src.coachSalary != null ? '$' + src.coachSalary.toLocaleString() : 'N/A (Private)',
+    lat:          src.lat         || 30.2838,
+    lng:          src.lng         || -97.7326,
+    coach:        '\u2014',
+    coachSeason:  '',
+    coachRecord:  '',
+  };
 
+  /* Live API overwrites conference and coach fields */
   if (teamInfo && teamInfo.conference) {
     data.conference = teamInfo.conference;
   }
@@ -1080,9 +1088,9 @@ const SchoolPage = {
              Conference and record are updated by loadData(). -->
         <div class="school-hero">
           <div class="school-header">
-            <div class="school-header-name">${TEXAS_STATIC.displayName}</div>
+            <div class="school-header-name">Texas Longhorns</div>
             <div class="school-header-meta">
-              <span class="school-header-conf" id="school-hero-conf">${TEXAS_STATIC.conference} &middot; ${SCHOOL_YEAR}</span>
+              <span class="school-header-conf" id="school-hero-conf">SEC &middot; ${SCHOOL_YEAR}</span>
               <span class="school-header-record" id="school-hero-record">\u2014</span>
             </div>
           </div>
@@ -1110,6 +1118,15 @@ const SchoolPage = {
      back to a safe empty value and updates independently.
      ---------------------------------------------------------- */
   async loadData() {
+    /* Load static school data from JSON before firing API calls */
+    try {
+      const resp  = await fetch('data/schools.json');
+      const json  = await resp.json();
+      _schoolData = (json.teams || []).find(function (t) { return t.id === SCHOOL_ID; }) || null;
+    } catch (e) {
+      _schoolData = null;
+    }
+
     const [gamesResult, rankResult, linesResult, coachResult, teamResult, priorGamesResult] =
       await Promise.allSettled([
         fetchSeasonRecord(SCHOOL_NAME, SCHOOL_YEAR),
@@ -1151,7 +1168,8 @@ const SchoolPage = {
    ---------------------------------------------------------- */
 function _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo) {
   /* --- Hero meta band --- */
-  const conf     = teamInfo ? (teamInfo.conference || TEXAS_STATIC.conference) : TEXAS_STATIC.conference;
+  const fallbackConf = _schoolData ? _schoolData.conference : 'SEC';
+  const conf         = teamInfo ? (teamInfo.conference || fallbackConf) : fallbackConf;
   const snapshot = hasGames ? _deriveSnapshotData(SCHOOL_NAME, completed, rank) : null;
 
   const heroConf   = document.getElementById('school-hero-conf');
@@ -1298,8 +1316,13 @@ function _initCampusMap(elId, pinColor, zoom, isModal) {
   if (!el) return;
 
   /* Build the map — no attribution clutter, scroll wheel off for inline */
+  const mapLat     = _schoolData ? _schoolData.lat     : 30.2838;
+  const mapLng     = _schoolData ? _schoolData.lng     : -97.7326;
+  const mapStadium = _schoolData ? _schoolData.stadium : 'Darrell K Royal\u2013Texas Memorial Stadium';
+  const mapCity    = _schoolData ? `${_schoolData.city}, ${_schoolData.state}` : 'Austin, TX';
+
   const map = L.map(el, {
-    center:             [TEXAS_STATIC.lat, TEXAS_STATIC.lng],
+    center:             [mapLat, mapLng],
     zoom:               zoom,
     scrollWheelZoom:    isModal,
     zoomControl:        isModal,
@@ -1327,9 +1350,9 @@ function _initCampusMap(elId, pinColor, zoom, isModal) {
     iconAnchor: [9, 9],
   });
 
-  L.marker([TEXAS_STATIC.lat, TEXAS_STATIC.lng], { icon: pin })
+  L.marker([mapLat, mapLng], { icon: pin })
     .addTo(map)
-    .bindPopup(`<strong>${TEXAS_STATIC.stadium}</strong><br>${TEXAS_STATIC.city}`);
+    .bindPopup(`<strong>${mapStadium}</strong><br>${mapCity}`);
 
   /* Store map references so invalidateSize() can be called after reveal */
   if (isModal) {
