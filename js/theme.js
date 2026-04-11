@@ -217,9 +217,22 @@ function applyThemeFromTeam(teamObj) {
   const MIN_PRIMARY_BRIGHTNESS = 40;
   const MIN_CONTRAST_DELTA     = 30;
 
+  /* Check SCHOOLS_DATA for a colorOverride before using CFBD data */
+  let rawPrimary   = teamObj && teamObj.color     ? teamObj.color     : '';
+  let rawSecondary = teamObj && teamObj.alt_color ? teamObj.alt_color : '';
+  if (teamObj && teamObj.school && typeof SCHOOLS_DATA !== 'undefined') {
+    const schoolEntry = (SCHOOLS_DATA.teams || []).find(function (t) {
+      return t.name.replace(t.mascot, '').trim() === teamObj.school;
+    });
+    if (schoolEntry && schoolEntry.colorOverride) {
+      if (schoolEntry.colorOverride.primary)   rawPrimary   = schoolEntry.colorOverride.primary;
+      if (schoolEntry.colorOverride.secondary) rawSecondary = schoolEntry.colorOverride.secondary;
+    }
+  }
+
   /* Normalize raw strings — CFBD inconsistently includes '#' */
-  let primary   = _normalizeHex(teamObj && teamObj.color     ? teamObj.color     : '');
-  let secondary = _normalizeHex(teamObj && teamObj.alt_color ? teamObj.alt_color : '');
+  let primary   = _normalizeHex(rawPrimary);
+  let secondary = _normalizeHex(rawSecondary);
 
   /* Validate primary — reject missing or too-dark colors */
   if (!primary || _hexBrightness(primary) < MIN_PRIMARY_BRIGHTNESS) {
