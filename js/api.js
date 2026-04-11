@@ -316,3 +316,95 @@ async function fetchCoachInfo(school, year) {
   _cacheSet(key, result, null); // cache indefinitely
   return result;
 }
+
+/* =============================================================
+   Phase 12 — Long-Term Strength Fetch Functions
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   fetchRegularRankings
+   Returns the full weekly AP poll snapshot array for a given
+   regular season. Each entry contains { season, week, polls }
+   where polls is an array of { poll, ranks }.
+
+   Used to compute peak rank, weeks ranked, and final regular-
+   season rank for the Rankings History subsection.
+   Cached indefinitely — past rankings never change.
+
+   @param {number} year — e.g. 2022
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchRegularRankings(year) {
+  const key = `regularRankings:${year}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/rankings', { year, seasonType: 'regular' });
+  _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}
+
+/* ----------------------------------------------------------
+   fetchDraftPicks
+   Returns all NFL draft picks for a given school across all
+   available years. Filter client-side to the desired range.
+   Each pick object includes: year, overall, round, pick,
+   name, position, nflTeam.
+
+   Cached indefinitely — historical draft data never changes.
+
+   @param {string} school — e.g. 'Texas'
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchDraftPicks(school) {
+  const key = `draftPicks:${school}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/draft/picks', { college: school });
+  _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}
+
+/* ----------------------------------------------------------
+   fetchAllCoaches
+   Returns the full coaching history array for a school.
+   Each coach entry contains firstName, lastName, and a seasons
+   array with year, wins, losses, school per season coached.
+
+   Distinct from fetchCoachInfo() which extracts only the
+   current coach. This function returns the raw array for
+   full history rendering.
+   Cached indefinitely.
+
+   @param {string} school — e.g. 'Texas'
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchAllCoaches(school) {
+  const key = `allCoaches:${school}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/coaches', { team: school });
+  _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}
+
+/* ----------------------------------------------------------
+   fetchPostseasonGames
+   Returns postseason (bowl) games for a school in a given year.
+   Used for historical bowl history years not already covered by
+   fetchSeasonRecord (which caches 'both' season types for
+   recent years).
+
+   Cached indefinitely — past bowl results never change.
+
+   @param {string} school — e.g. 'Texas'
+   @param {number} year   — e.g. 2005
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchPostseasonGames(school, year) {
+  const key = `postseasonGames:${school}:${year}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/games', { year, team: school, seasonType: 'postseason' });
+  _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}

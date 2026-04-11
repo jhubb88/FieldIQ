@@ -1411,3 +1411,315 @@ body.is-home .page-content {
 .school-link:hover::after {
   opacity: 1;
 }
+
+/* =============================================================
+   Phase 12 — Long-Term Strength Components
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   Rankings History
+   One row per season showing peak rank, final rank, and
+   weeks ranked. Unranked seasons display a muted label.
+   ---------------------------------------------------------- */
+.rankings-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rankings-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+}
+
+.rankings-row-year {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  min-width: 40px;
+}
+
+.rankings-row-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.rankings-peak {
+  font-weight: 600;
+  color: var(--school-primary);
+}
+
+.rankings-final {
+  color: var(--text-secondary);
+}
+
+.rankings-weeks {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.rankings-sep {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.rankings-unranked {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* ----------------------------------------------------------
+   Coaching History Table
+   Full-width table listing all coaches from 1995–present.
+   Scroll wrapper prevents overflow on narrow viewports.
+   ---------------------------------------------------------- */
+.coach-history-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.coach-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+
+.coach-history-table thead tr {
+  border-bottom: 2px solid var(--school-primary);
+}
+
+.coach-history-table th {
+  padding: 8px 12px;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.coach-history-table td {
+  padding: 9px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.coach-history-table tbody tr:hover td {
+  background-color: var(--bg-surface);
+}
+
+.coach-history-subhead {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+}
+
+/* ----------------------------------------------------------
+   Long-Term Year List
+   Used for bowl appearances and year-by-year W/L summary.
+   Each row has a year label and a value on the right.
+   ---------------------------------------------------------- */
+.longterm-year-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.longterm-year-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px;
+  border-radius: var(--radius-card);
+}
+
+.longterm-year-row:nth-child(odd) {
+  background-color: var(--bg-card);
+}
+
+.longterm-year-label {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  min-width: 40px;
+}
+
+.longterm-year-value {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+/* ----------------------------------------------------------
+   Result Badge
+   Small W/L pill used in bowl history rows.
+   ---------------------------------------------------------- */
+.result-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.result-badge.result-w {
+  background-color: var(--color-win-bg);
+  color: var(--color-win-text);
+}
+
+.result-badge.result-l {
+  background-color: var(--color-loss-bg);
+  color: var(--color-loss-text);
+}
+
+/* =============================================================
+   Phase 12b — Draft Production Grid + Player Drawer
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   Draft Production Grid
+   Auto-fills cards across available width. Min 110px per card
+   keeps years readable; 1fr lets them grow to fill the row.
+   ---------------------------------------------------------- */
+.draft-production-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+/* ----------------------------------------------------------
+   Draft Card
+   Extends .stat-card. Clickable variant adds cursor, removes
+   the default hover border so the open state owns that style.
+   ---------------------------------------------------------- */
+.draft-card--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.draft-card--clickable:hover {
+  border-color: var(--school-primary);
+}
+
+.draft-card--clickable.is-open {
+  border-color: var(--school-primary);
+  background-color: var(--bg-surface);
+}
+
+/* ----------------------------------------------------------
+   Chevron Indicator
+   Pure CSS triangle rendered via ::after content. Rotates
+   180deg when the parent card carries .is-open.
+   ---------------------------------------------------------- */
+.draft-chevron {
+  display: inline-block;
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  vertical-align: middle;
+  margin-left: 3px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.draft-chevron::after {
+  content: '\25BE'; /* ▾ small down-pointing triangle */
+}
+
+.draft-card--clickable.is-open .draft-chevron {
+  transform: rotate(180deg);
+  color: var(--school-primary);
+}
+
+/* ----------------------------------------------------------
+   Draft Drawer Panel
+   Full-width panel that appears below the grid when a card
+   is clicked. Hidden by default; .is-open makes it visible.
+   ---------------------------------------------------------- */
+.draft-drawer-panel {
+  display: none;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--school-primary);
+  border-radius: var(--radius-card);
+  padding: 4px 0;
+  margin-top: 6px;
+}
+
+.draft-drawer-panel.is-open {
+  display: block;
+}
+
+/* ----------------------------------------------------------
+   Draft Player Row
+   Four columns: name | position | round+pick | NFL team.
+   Name is flex-grow so it takes remaining space; other
+   columns are fixed to their content width.
+   ---------------------------------------------------------- */
+.draft-player-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.draft-player-row:last-child {
+  border-bottom: none;
+}
+
+.draft-player-name {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.draft-player-pos {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.draft-player-pick {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.draft-player-team {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--school-primary);
+  white-space: nowrap;
+}

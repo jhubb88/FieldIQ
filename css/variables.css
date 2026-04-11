@@ -36,6 +36,11 @@
   --text-secondary: #3a4060;  /* Supporting text */
   --text-muted:     #2a3050;  /* Placeholders, disabled states */
   --color-loss:     #9b2335;  /* Season arc loss dot — muted red */
+  --color-win:      #1e6b3f;  /* Win indicator — muted green */
+  --color-win-text: #4ade80;  /* Win badge text — bright green */
+  --color-loss-text:#f87171;  /* Loss badge text — bright red */
+  --color-win-bg:   rgba(30, 107, 63, 0.20);   /* Win badge background */
+  --color-loss-bg:  rgba(155, 35, 53, 0.20);   /* Loss badge background */
 
   /* ----------------------------------------------------------
      Font Families

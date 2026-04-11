@@ -13,7 +13,9 @@
    Phase 7: Situational + Market Performance lenses wired.
    Refactor: _loadAnalyticsData split into _loadGameControlData,
              _loadSituationalData, _loadMarketData before Phase 8.
-   Phase 8: Campus Map (Leaflet.js) — next.
+   Phase 8: Campus Map (Leaflet.js).
+   Phase 12: Long-Term Strength — Rankings History, Draft Production,
+             Coaching Continuity, Bowl History, 10-Year Record.
    ============================================================= */
 
 /* ----------------------------------------------------------
@@ -1124,6 +1126,48 @@ function renderCampusMapSection() {
 }
 
 /* ----------------------------------------------------------
+   renderLongTermSection
+   Returns the Long-Term Strength section wrapper. Contains five
+   independent content slots, each seeded with a loading state.
+   _loadLongTermStrengthData() replaces each slot's content
+   asynchronously as fetches resolve.
+
+   Slots:
+     longterm-rankings  — Rankings History (last 3 seasons)
+     longterm-draft     — NFL Draft Production (last 5 years)
+     longterm-coaching  — Coaching Continuity (history table)
+     longterm-bowl      — Bowl Game History (all-time)
+     longterm-record    — Long-Term Record (10-year W/L)
+   ---------------------------------------------------------- */
+function renderLongTermSection() {
+  const loading = loadingHTML();
+  return `
+    <div class="school-section" data-section="longterm">
+      <h2 class="school-section-title">Long-Term Strength</h2>
+
+      <h3 class="school-section-title">Rankings History</h3>
+      <div id="longterm-rankings">${loading}</div>
+
+      <hr class="section-divider">
+      <h3 class="school-section-title">NFL Draft Production</h3>
+      <div id="longterm-draft">${loading}</div>
+
+      <hr class="section-divider">
+      <h3 class="school-section-title">Coaching Continuity</h3>
+      <div id="longterm-coaching">${loading}</div>
+
+      <hr class="section-divider">
+      <h3 class="school-section-title">Bowl Game History</h3>
+      <div id="longterm-bowl">${loading}</div>
+
+      <hr class="section-divider">
+      <h3 class="school-section-title">Long-Term Record (2015\u20132025)</h3>
+      <div id="longterm-record">${loading}</div>
+
+    </div>`;
+}
+
+/* ----------------------------------------------------------
    renderPlaceholderSection
    Dashed placeholder for sections not yet built out.
    ---------------------------------------------------------- */
@@ -1153,6 +1197,7 @@ function renderSections() {
     if (section.id === 'market')       return renderMarketSection();
     if (section.id === 'campus-map')   return renderCampusMapSection();
     if (section.id === 'h2h')          return renderH2HSection();
+    if (section.id === 'longterm')     return renderLongTermSection();
     return renderPlaceholderSection(section);
   }).join('');
 }
@@ -1262,6 +1307,7 @@ const SchoolPage = {
 
     _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo);
     _loadAnalyticsData(completed, hasGames, lines, priorCompleted);
+    _loadLongTermStrengthData();
   },
 
 };
@@ -1359,6 +1405,604 @@ function _loadMarketData(completed, lines) {
   const streaks      = computeCoverStreaks(completed, lines, SCHOOL_NAME);
   setSection('market-content',
     renderMarketPerformance({ ats, ou, homeUnderdog, streaks }));
+}
+
+/* =============================================================
+   Phase 12 — Long-Term Strength Render Helpers
+   Each function takes processed data and returns an HTML string.
+   Called by _loadLongTermStrengthData() subsection IIFEs.
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   _extractAPRankings
+   Internal helper. Given a weekly rankings array and a school
+   name, returns { peakRank, weeksRanked, lastRank } for AP Top 25.
+
+   @param {Array}  weeklyData — output of fetchRegularRankings()
+   @param {string} school     — CFBD school name, e.g. 'Texas'
+   @returns {{ peakRank: number|null, weeksRanked: number, lastRank: number|null }}
+   ---------------------------------------------------------- */
+function _extractAPRankings(weeklyData, school) {
+  let peakRank = null;
+  let weeksRanked = 0;
+  let lastRank = null;
+
+  (weeklyData || []).forEach(function (weekEntry) {
+    const apPoll = (weekEntry.polls || []).find(function (p) { return p.poll === 'AP Top 25'; });
+    if (!apPoll) return;
+    const entry = (apPoll.ranks || []).find(function (r) { return r.school === school; });
+    if (!entry) return;
+    weeksRanked++;
+    if (peakRank === null || entry.rank < peakRank) peakRank = entry.rank;
+    lastRank = entry.rank;
+  });
+
+  return { peakRank, weeksRanked, lastRank };
+}
+
+/* ----------------------------------------------------------
+   renderRankingsHistory
+   Builds the Rankings History subsection. Three rows, one per
+   season (2022–2024). Each row shows peak rank, final rank,
+   and weeks ranked. Unranked seasons show a clean label.
+
+   @param {Array} seasons — array of { year, weeklyData, finalRank }
+                           where weeklyData is the regular-season
+                           rankings array and finalRank is the
+                           postseason final rank (may be null)
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderRankingsHistory(seasons) {
+  const rows = seasons.map(function (s) {
+    const { peakRank, weeksRanked, lastRank } = _extractAPRankings(s.weeklyData, SCHOOL_NAME);
+
+    /* Use postseason final rank if available, else last regular-season rank */
+    const displayFinal = s.finalRank !== null ? s.finalRank : lastRank;
+
+    if (peakRank === null) {
+      return `
+        <div class="rankings-row">
+          <div class="rankings-row-year">${s.year}</div>
+          <div class="rankings-row-stats">
+            <span class="rankings-unranked">Unranked</span>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="rankings-row">
+        <div class="rankings-row-year">${s.year}</div>
+        <div class="rankings-row-stats">
+          <span class="rankings-peak">Peak: #${peakRank}</span>
+          <span class="rankings-sep">&middot;</span>
+          <span class="rankings-final">Final: ${displayFinal !== null ? '#' + displayFinal : '\u2014'}</span>
+          <span class="rankings-sep">&middot;</span>
+          <span class="rankings-weeks">${weeksRanked} week${weeksRanked !== 1 ? 's' : ''} ranked</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `<div class="rankings-history">${rows}</div>`;
+}
+
+/* ----------------------------------------------------------
+   renderDraftProduction
+   Builds the NFL Draft Production subsection. One stat card per
+   year for 2015–2025 (11 cards). Cards with picks are clickable
+   and toggle a player drawer via _toggleDraftDrawer(). Cards with
+   zero picks are not clickable and show no chevron.
+
+   Pick data is written to window._draftPicksData so the drawer
+   toggle function can access it without re-fetching.
+
+   @param {Array} picks — raw output of fetchDraftPicks()
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderDraftProduction(picks) {
+  const START_YEAR = 2015;
+  const END_YEAR   = 2025;
+
+  /* Filter to only this school's picks — the API may return all picks
+     regardless of the college parameter, so guard client-side. */
+  const schoolPicks = (picks || []).filter(function (p) {
+    return p.college === SCHOOL_NAME || p.collegeTeam === SCHOOL_NAME;
+  });
+
+  /* Group picks by year and expose to _toggleDraftDrawer via window scope */
+  window._draftPicksData = {};
+  const byYear = {};
+  for (let y = START_YEAR; y <= END_YEAR; y++) {
+    byYear[y] = [];
+    window._draftPicksData[y] = [];
+  }
+  schoolPicks.forEach(function (pick) {
+    if (pick.year >= START_YEAR && pick.year <= END_YEAR) {
+      byYear[pick.year].push(pick);
+      window._draftPicksData[pick.year].push(pick);
+    }
+  });
+
+  /* Build year cards */
+  const cards = [];
+  for (let y = START_YEAR; y <= END_YEAR; y++) {
+    const yearPicks = byYear[y];
+    const total     = yearPicks.length;
+
+    /* Round breakdown: count picks per round, display inline */
+    const roundCounts = {};
+    yearPicks.forEach(function (p) {
+      const r = p.round || '?';
+      roundCounts[r] = (roundCounts[r] || 0) + 1;
+    });
+    const roundStr = Object.keys(roundCounts)
+      .sort(function (a, b) { return Number(a) - Number(b); })
+      .map(function (r) { return `${roundCounts[r]} R${r}`; })
+      .join(' \u00b7 ');
+
+    if (total > 0) {
+      /* Clickable card — chevron rotates when drawer is open */
+      cards.push(`
+        <div class="stat-card draft-card draft-card--clickable"
+             onclick="_toggleDraftDrawer(${y})"
+             data-year="${y}">
+          <div class="stat-card-title">${y} <span class="draft-chevron"></span></div>
+          <div class="stat-card-value">${total}</div>
+          <div class="stat-card-sub">${roundStr}</div>
+        </div>`);
+    } else {
+      /* Non-clickable — no picks this year */
+      cards.push(`
+        <div class="stat-card draft-card">
+          <div class="stat-card-title">${y}</div>
+          <div class="stat-card-value">0</div>
+          <div class="stat-card-sub">No picks</div>
+        </div>`);
+    }
+  }
+
+  /* 11-year summary */
+  const totalAll = schoolPicks.filter(function (p) {
+    return p.year >= START_YEAR && p.year <= END_YEAR;
+  });
+  const r1Count = totalAll.filter(function (p) { return p.round === 1; }).length;
+  const summary = `${totalAll.length} picks (${START_YEAR}\u2013${END_YEAR}) \u00b7 ${r1Count} Round 1`;
+
+  return `
+    <div class="draft-production-grid">${cards.join('')}</div>
+    <div class="draft-drawer-panel" id="draft-drawer-panel"></div>
+    <p class="stat-card-note">${summary}</p>`;
+}
+
+/* ----------------------------------------------------------
+   _toggleDraftDrawer
+   Opens or closes the player drawer beneath the draft grid for
+   a given draft year. Reads pick data from window._draftPicksData,
+   which is populated by renderDraftProduction() when the section
+   renders. Only one drawer can be open at a time — clicking a new
+   card closes the previously open one automatically.
+
+   @param {number} year — draft year to show, e.g. 2024
+   ---------------------------------------------------------- */
+function _toggleDraftDrawer(year) {
+  const panel    = document.getElementById('draft-drawer-panel');
+  const allCards = document.querySelectorAll('.draft-card--clickable');
+  if (!panel) return;
+
+  /* If this year's drawer is already open, close it and exit */
+  if (panel.dataset.activeYear === String(year) && panel.classList.contains('is-open')) {
+    panel.classList.remove('is-open');
+    panel.dataset.activeYear = '';
+    allCards.forEach(function (c) { c.classList.remove('is-open'); });
+    return;
+  }
+
+  /* Clear open state on all cards, then mark the active one */
+  allCards.forEach(function (c) { c.classList.remove('is-open'); });
+  const activeCard = document.querySelector('.draft-card--clickable[data-year="' + year + '"]');
+  if (activeCard) activeCard.classList.add('is-open');
+
+  /* Sort picks by overall draft position ascending */
+  const picks  = ((window._draftPicksData || {})[year] || []).slice();
+  picks.sort(function (a, b) {
+    return (a.overall || a.pick || 0) - (b.overall || b.pick || 0);
+  });
+
+  /* Build one row per player */
+  const rows = picks.map(function (p) {
+    const pickNum = p.overall || p.pick || '\u2014';
+    const team    = p.nflTeam || p.nfl_team || '\u2014';
+    return `
+      <div class="draft-player-row">
+        <span class="draft-player-name">${p.name || '\u2014'}</span>
+        <span class="draft-player-pos">${p.position || '\u2014'}</span>
+        <span class="draft-player-pick">R${p.round} \u00b7 Pick ${pickNum}</span>
+        <span class="draft-player-team">${team}</span>
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = rows;
+  panel.dataset.activeYear = String(year);
+  panel.classList.add('is-open');
+}
+
+/* ----------------------------------------------------------
+   renderCoachingContinuity
+   Builds the Coaching Continuity subsection. Two parts:
+     1. Current coach card — name, tenure, record, salary.
+     2. Full coaching history table — 1995 to present,
+        newest-first. Salary and conference championships are
+        not available from the API — salary comes from
+        schools.json; conf titles show \u2014.
+
+   @param {Array}       coaches   — raw output of fetchAllCoaches()
+   @param {Object|null} schoolData — entry from SCHOOLS_DATA for
+                                    this school (may be null)
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderCoachingContinuity(coaches, schoolData) {
+  if (!Array.isArray(coaches) || coaches.length === 0) {
+    return errorHTML('Coaching history data unavailable.');
+  }
+
+  const HISTORY_START = 1995;
+
+  /* Build a flat list of { name, startYear, endYear, wins, losses } for this school */
+  const history = [];
+  coaches.forEach(function (coach) {
+    const schoolSeasons = (coach.seasons || [])
+      .filter(function (s) { return s.school === SCHOOL_NAME && s.year >= HISTORY_START; })
+      .sort(function (a, b) { return a.year - b.year; });
+
+    if (schoolSeasons.length === 0) return;
+
+    const wins   = schoolSeasons.reduce(function (sum, s) { return sum + (s.wins   || 0); }, 0);
+    const losses = schoolSeasons.reduce(function (sum, s) { return sum + (s.losses || 0); }, 0);
+    const startY = schoolSeasons[0].year;
+    const endY   = schoolSeasons[schoolSeasons.length - 1].year;
+    const name   = `${coach.firstName || ''} ${coach.lastName || ''}`.trim();
+
+    /* Best postseason AP rank during this coach's tenure — lower is better */
+    const postRanks = schoolSeasons
+      .map(function (s) { return s.postseasonRank; })
+      .filter(function (r) { return r !== null && r !== undefined; });
+    const bestRank = postRanks.length > 0 ? Math.min.apply(null, postRanks) : null;
+
+    history.push({ name, startYear: startY, endYear: endY, wins, losses, bestRank });
+  });
+
+  /* Sort newest-first */
+  history.sort(function (a, b) { return b.endYear - a.endYear; });
+
+  /* Identify current coach — highest endYear */
+  const current = history[0] || null;
+
+  /* Salary from schools.json — private schools show N/A.
+     Format raw numbers as $X,XXX,XXX; pass strings (e.g. 'N/A') through. */
+  const rawSalary = schoolData && schoolData.coachSalary ? schoolData.coachSalary : null;
+  let salary;
+  if (!rawSalary) {
+    salary = 'N/A';
+  } else {
+    const n = Number(rawSalary);
+    salary = isNaN(n) ? String(rawSalary) : '$' + n.toLocaleString('en-US');
+  }
+
+  /* Current coach card */
+  let currentCard = '';
+  if (current) {
+    const tenure = SCHOOL_YEAR - current.startYear + 1;
+    currentCard = `
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">Head Coach</div>
+          <div class="stat-card-value">${current.name}</div>
+          <div class="stat-card-sub">Since ${current.startYear} \u00b7 ${tenure} year${tenure !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Record at School</div>
+          <div class="stat-card-value">${current.wins}\u2013${current.losses}</div>
+          <div class="stat-card-sub">${current.startYear}\u2013present</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Coach Salary</div>
+          <div class="stat-card-value">${salary}</div>
+          <div class="stat-card-sub">Annual (public records)</div>
+        </div>
+      </div>`;
+  }
+
+  /* History table rows */
+  const tableRows = history.map(function (h) {
+    const yearRange = h.startYear === h.endYear ? `${h.startYear}` : `${h.startYear}\u2013${h.endYear}`;
+    return `
+      <tr>
+        <td>${h.name}</td>
+        <td>${yearRange}</td>
+        <td>${h.wins}\u2013${h.losses}</td>
+        <td>${h.bestRank !== null ? '#' + h.bestRank : '\u2014'}</td>
+      </tr>`;
+  }).join('');
+
+  const table = `
+    <div class="coach-history-wrap">
+      <table class="coach-history-table">
+        <thead>
+          <tr>
+            <th>Coach</th>
+            <th>Years</th>
+            <th>Record</th>
+            <th>Best AP Rank</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+
+  return currentCard + table;
+}
+
+/* ----------------------------------------------------------
+   renderBowlHistory
+   Builds the Bowl Game History subsection. Shows all-time W-L
+   and the last 10 bowl appearances (newest first).
+
+   @param {Array} allGames — flat array of all postseason game
+                            objects collected across years
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderBowlHistory(allGames) {
+  /* Filter to only games involving this school */
+  const bowls = (allGames || []).filter(function (g) {
+    return g.homeTeam === SCHOOL_NAME || g.awayTeam === SCHOOL_NAME;
+  });
+
+  /* Sort newest-first */
+  bowls.sort(function (a, b) { return b.season - a.season; });
+
+  if (bowls.length === 0) {
+    return '<p class="stat-card-note">No bowl history found.</p>';
+  }
+
+  /* All-time W-L */
+  let allWins = 0, allLosses = 0;
+  bowls.forEach(function (g) {
+    const isHome  = g.homeTeam === SCHOOL_NAME;
+    const teamPts = isHome ? g.homePoints : g.awayPoints;
+    const oppPts  = isHome ? g.awayPoints  : g.homePoints;
+    if (teamPts > oppPts) allWins++; else allLosses++;
+  });
+
+  /* All-time record card */
+  const recordCard = `
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">All-Time Bowl Record</div>
+        <div class="stat-card-value">${allWins}\u2013${allLosses}</div>
+        <div class="stat-card-sub">${bowls.length} appearance${bowls.length !== 1 ? 's' : ''}</div>
+      </div>
+    </div>`;
+
+  /* Last 10 appearances list */
+  const last10 = bowls.slice(0, 10);
+  const listRows = last10.map(function (g) {
+    const isHome  = g.homeTeam === SCHOOL_NAME;
+    const teamPts = isHome ? g.homePoints : g.awayPoints;
+    const oppPts  = isHome ? g.awayPoints  : g.homePoints;
+    const opp     = isHome ? g.awayTeam    : g.homeTeam;
+    const result  = teamPts > oppPts ? 'W' : 'L';
+    const bowlName = g.notes || 'Bowl Game';
+    return `
+      <div class="longterm-year-row">
+        <span class="longterm-year-label">${g.season}</span>
+        <span class="longterm-year-value">
+          <span class="result-badge result-${result.toLowerCase()}">${result}</span>
+          ${teamPts}\u2013${oppPts} vs ${opp} \u00b7 ${bowlName}
+        </span>
+      </div>`;
+  }).join('');
+
+  return recordCard + `
+    <h4 class="coach-history-subhead">Last ${last10.length} Bowl Appearances</h4>
+    <div class="longterm-year-list">${listRows}</div>`;
+}
+
+/* ----------------------------------------------------------
+   renderLongTermRecord
+   Builds the 10-Year Record subsection. Four stat cards plus
+   a year-by-year W-L summary list.
+
+   @param {Array} yearEntries — array of { year, wins, losses }
+                               for 2015–2024, regular season only
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderLongTermRecord(yearEntries) {
+  /* Sort ascending for year-by-year list; build stats from all entries */
+  const sorted = yearEntries.slice().sort(function (a, b) { return a.year - b.year; });
+
+  let totalWins = 0, totalLosses = 0;
+  let bestWins = -1, bestYear = null;
+  let worstWins = Infinity, worstYear = null;
+
+  sorted.forEach(function (e) {
+    totalWins   += e.wins;
+    totalLosses += e.losses;
+    if (e.wins > bestWins)   { bestWins  = e.wins;   bestYear  = e.year; }
+    if (e.wins < worstWins)  { worstWins = e.wins;   worstYear = e.year; }
+  });
+
+  const totalGames = totalWins + totalLosses;
+  const winPct     = totalGames > 0 ? (totalWins / totalGames * 100).toFixed(1) : '0.0';
+
+  /* Best and worst season entries */
+  const bestEntry  = sorted.find(function (e) { return e.year === bestYear;  });
+  const worstEntry = sorted.find(function (e) { return e.year === worstYear; });
+
+  const cards = `
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <div class="stat-card-title">10-Year Record</div>
+        <div class="stat-card-value">${totalWins}\u2013${totalLosses}</div>
+        <div class="stat-card-sub">2015\u20132024 regular season</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Win %</div>
+        <div class="stat-card-value">${winPct}%</div>
+        <div class="stat-card-sub">${totalGames} games played</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Best Season</div>
+        <div class="stat-card-value">${bestEntry ? bestEntry.wins + '\u2013' + bestEntry.losses : '\u2014'}</div>
+        <div class="stat-card-sub">${bestYear || '\u2014'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">Worst Season</div>
+        <div class="stat-card-value">${worstEntry ? worstEntry.wins + '\u2013' + worstEntry.losses : '\u2014'}</div>
+        <div class="stat-card-sub">${worstYear || '\u2014'}</div>
+      </div>
+    </div>`;
+
+  /* Year-by-year list — descending so newest is first */
+  const listRows = sorted.slice().reverse().map(function (e) {
+    return `
+      <div class="longterm-year-row">
+        <span class="longterm-year-label">${e.year}</span>
+        <span class="longterm-year-value">${e.wins}\u2013${e.losses}</span>
+      </div>`;
+  }).join('');
+
+  return cards + `<div class="longterm-year-list">${listRows}</div>`;
+}
+
+/* ----------------------------------------------------------
+   _loadLongTermStrengthData
+   Async coordinator for the Long-Term Strength section.
+   Each of the five subsections runs as an independent IIFE
+   so that one failed fetch does not block the others.
+   All results are cached indefinitely — subsequent visits
+   to this school's page cost zero API calls for this section.
+   ---------------------------------------------------------- */
+async function _loadLongTermStrengthData() {
+
+  /* --- 1. Rankings History (2023, 2024, 2025) --- */
+  (async function () {
+    try {
+      const [reg2023, reg2024, reg2025, fin2023, fin2024, fin2025] = await Promise.all([
+        fetchRegularRankings(2023),
+        fetchRegularRankings(2024),
+        fetchRegularRankings(2025),
+        fetchFinalRank(SCHOOL_NAME, 2023),
+        fetchFinalRank(SCHOOL_NAME, 2024),
+        fetchFinalRank(SCHOOL_NAME, 2025),
+      ]);
+
+      const seasons = [
+        { year: 2023, weeklyData: reg2023, finalRank: fin2023 },
+        { year: 2024, weeklyData: reg2024, finalRank: fin2024 },
+        { year: 2025, weeklyData: reg2025, finalRank: fin2025 },
+      ];
+      setSection('longterm-rankings', renderRankingsHistory(seasons));
+    } catch (e) {
+      setSection('longterm-rankings', errorHTML('Rankings data unavailable.'));
+    }
+  })();
+
+  /* --- 2. NFL Draft Production (2020–2024) --- */
+  (async function () {
+    try {
+      const picks = await fetchDraftPicks(SCHOOL_NAME);
+      setSection('longterm-draft', renderDraftProduction(picks));
+    } catch (e) {
+      setSection('longterm-draft', errorHTML('Draft data unavailable.'));
+    }
+  })();
+
+  /* --- 3. Coaching Continuity --- */
+  (async function () {
+    try {
+      const coaches = await fetchAllCoaches(SCHOOL_NAME);
+      setSection('longterm-coaching', renderCoachingContinuity(coaches, _schoolData));
+    } catch (e) {
+      setSection('longterm-coaching', errorHTML('Coaching data unavailable.'));
+    }
+  })();
+
+  /* --- 4. Bowl Game History (2000–2024) ---
+     2015–2024: use fetchSeasonRecord cache (seasonType 'both' includes postseason).
+     2000–2014: dedicated fetchPostseasonGames calls.
+     Both run concurrently; all results flattened into one array.             */
+  (async function () {
+    try {
+      /* Recent years: fetchSeasonRecord already fetched these for 10-yr record
+         below, but since they run concurrently, we call here too — cache handles it */
+      const recentYears = [];
+      for (let y = 2015; y <= 2025; y++) recentYears.push(y);
+
+      const historicYears = [];
+      for (let y = 2000; y < 2015; y++) historicYears.push(y);
+
+      const [recentResults, historicResults] = await Promise.all([
+        Promise.allSettled(recentYears.map(function (y) { return fetchSeasonRecord(SCHOOL_NAME, y); })),
+        Promise.allSettled(historicYears.map(function (y) { return fetchPostseasonGames(SCHOOL_NAME, y); })),
+      ]);
+
+      /* Flatten all postseason games — filter out regular season games from recent batch */
+      const allGames = [];
+
+      recentResults.forEach(function (r, i) {
+        if (r.status !== 'fulfilled') return;
+        (r.value || []).forEach(function (g) {
+          if (g.seasonType === 'postseason') allGames.push({ ...g, season: recentYears[i] });
+        });
+      });
+
+      historicResults.forEach(function (r, i) {
+        if (r.status !== 'fulfilled') return;
+        (r.value || []).forEach(function (g) {
+          allGames.push({ ...g, season: historicYears[i] });
+        });
+      });
+
+      setSection('longterm-bowl', renderBowlHistory(allGames));
+    } catch (e) {
+      setSection('longterm-bowl', errorHTML('Bowl history unavailable.'));
+    }
+  })();
+
+  /* --- 5. Long-Term Record (2015–2024, regular season) --- */
+  (async function () {
+    try {
+      const years = [];
+      for (let y = 2015; y <= 2025; y++) years.push(y);
+
+      const results = await Promise.allSettled(
+        years.map(function (y) { return fetchSeasonRecord(SCHOOL_NAME, y); })
+      );
+
+      const yearEntries = [];
+      results.forEach(function (r, i) {
+        if (r.status !== 'fulfilled') return;
+        let wins = 0, losses = 0;
+        (r.value || []).forEach(function (g) {
+          /* Regular season only — exclude postseason/bowl games */
+          if (g.seasonType !== 'regular') return;
+          const isHome    = g.homeTeam === SCHOOL_NAME;
+          const teamPts   = isHome ? g.homePoints : g.awayPoints;
+          const oppPts    = isHome ? g.awayPoints  : g.homePoints;
+          if (teamPts === null || oppPts === null) return;
+          if (teamPts > oppPts) wins++; else losses++;
+        });
+        yearEntries.push({ year: years[i], wins, losses });
+      });
+
+      if (yearEntries.length === 0) {
+        setSection('longterm-record', errorHTML('10-year record data unavailable.'));
+      } else {
+        setSection('longterm-record', renderLongTermRecord(yearEntries));
+      }
+    } catch (e) {
+      setSection('longterm-record', errorHTML('10-year record data unavailable.'));
+    }
+  })();
 }
 
 /* ----------------------------------------------------------
