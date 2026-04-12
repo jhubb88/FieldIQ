@@ -595,6 +595,28 @@
       }
     },
     {
+      "id": "oregon-state",
+      "name": "Oregon State Beavers",
+      "abbreviation": "ORST",
+      "city": "Corvallis",
+      "state": "OR",
+      "conference": "Pac-12",
+      "primaryColor": "#000000",
+      "secondaryColor": "#FF6600",
+      "mascot": "Beavers",
+      "stadium": "Reser Stadium",
+      "stadiumCapacity": 35362,
+      "founded": 1868,
+      "enrollment": 32527,
+      "coachSalary": 2250000,
+      "lat": 44.5638,
+      "lng": -123.2776,
+      "colorOverride": {
+        "primary": "#000000",
+        "secondary": "#FF6600"
+      }
+    },
+    {
       "id": "penn-state",
       "name": "Penn State Nittany Lions",
       "abbreviation": "PSU",
@@ -724,6 +746,28 @@
       "colorOverride": {
         "primary": "#33006F",
         "secondary": "#E8D3A2"
+      }
+    },
+    {
+      "id": "washington-state",
+      "name": "Washington State Cougars",
+      "abbreviation": "WSU",
+      "city": "Pullman",
+      "state": "WA",
+      "conference": "Pac-12",
+      "primaryColor": "#981E32",
+      "secondaryColor": "#5E6A71",
+      "mascot": "Cougars",
+      "stadium": "Gesa Field at Martin Stadium",
+      "stadiumCapacity": 31218,
+      "founded": 1890,
+      "enrollment": 21000,
+      "coachSalary": 1500000,
+      "lat": 46.7298,
+      "lng": -117.1696,
+      "colorOverride": {
+        "primary": "#981E32",
+        "secondary": "#5E6A71"
       }
     },
     {

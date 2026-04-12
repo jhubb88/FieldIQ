@@ -18,7 +18,8 @@
 }
 
 .card:hover {
-  border-color: var(--school-primary);
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
+  transform: scale(1.01);
 }
 
 /* ----------------------------------------------------------
@@ -38,7 +39,8 @@
 }
 
 .stat-card:hover {
-  border-color: var(--school-primary);
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
+  transform: scale(1.02);
 }
 
 .stat-card .stat-label {
@@ -88,7 +90,7 @@
 .nav-item:hover {
   color: var(--text-primary);
   background-color: var(--bg-card);
-  border-left-color: var(--border-color);
+  border-left-color: color-mix(in srgb, var(--school-secondary) 50%, transparent);
 }
 
 .nav-item.active {
@@ -175,6 +177,17 @@
 }
 
 /* =============================================================
+   ANIMATIONS
+   Shared keyframes used across page transitions and section
+   reveals. CSS-only — no JS animation libraries.
+   ============================================================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================================
    HOMEPAGE COMPONENTS
    All styles below are scoped to the home page shell.
    ============================================================= */
@@ -225,7 +238,7 @@
 .mosaic-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(8, 10, 15, 0.82);
+  background: rgba(13, 17, 23, 0.82);
 }
 
 /* When on the home route, make page-content transparent so the
@@ -450,7 +463,7 @@ body.is-home .page-content {
 .lens-nav-item:hover {
   color: var(--text-primary);
   background-color: var(--bg-card);
-  border-left-color: var(--border-color);
+  border-left-color: color-mix(in srgb, var(--school-secondary) 50%, transparent);
 }
 
 .lens-nav-item.active {
@@ -537,6 +550,7 @@ body.is-home .page-content {
 
 .school-section.is-active {
   display: flex;
+  animation: fadeIn 0.2s ease forwards;
 }
 
 /* ----------------------------------------------------------
@@ -550,8 +564,10 @@ body.is-home .page-content {
   font-weight: 700;
   color: var(--text-primary);
   border-left: 3px solid var(--school-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--school-secondary) 20%, transparent);
   padding-left: 12px;
-  margin: 0;
+  padding-bottom: 8px;
+  margin: 0 0 4px;
 }
 
 /* ----------------------------------------------------------
@@ -680,7 +696,8 @@ body.is-home .page-content {
 }
 
 .snapshot-card:hover {
-  border-color: var(--school-primary);
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
+  transform: scale(1.02);
 }
 
 .snapshot-value {
@@ -721,7 +738,8 @@ body.is-home .page-content {
 }
 
 .game-card:hover {
-  border-color: var(--school-primary);
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
+  transform: scale(1.01);
 }
 
 .game-card-header {
@@ -1624,7 +1642,7 @@ body.is-home .page-content {
 }
 
 .draft-card--clickable:hover {
-  border-color: var(--school-primary);
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
 }
 
 .draft-card--clickable.is-open {

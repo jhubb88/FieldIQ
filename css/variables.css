@@ -20,9 +20,9 @@
      Dark layered palette — deepest at base, lighter as surfaces
      stack upward.
      ---------------------------------------------------------- */
-  --bg-base:    #080a0f;  /* Page background */
-  --bg-surface: #0d0f18;  /* Sidebar, modals, elevated panels */
-  --bg-card:    #0a0c14;  /* Cards, stat boxes */
+  --bg-base:    #0d1117;  /* Page background */
+  --bg-surface: #131726;  /* Sidebar, modals, elevated panels */
+  --bg-card:    #0f1218;  /* Cards, stat boxes */
 
   /* ----------------------------------------------------------
      Borders
@@ -33,8 +33,8 @@
      Typography Colors
      ---------------------------------------------------------- */
   --text-primary:   #ffffff;  /* Headlines, labels */
-  --text-secondary: #3a4060;  /* Supporting text */
-  --text-muted:     #2a3050;  /* Placeholders, disabled states */
+  --text-secondary: #8892b0;  /* Supporting text — labels, card headers, nav */
+  --text-muted:     #a0a8bf;  /* De-emphasized — footnotes, stat annotations, placeholders */
   --color-loss:     #9b2335;  /* Season arc loss dot — muted red */
   --color-win:      #1e6b3f;  /* Win indicator — muted green */
   --color-win-text: #4ade80;  /* Win badge text — bright green */

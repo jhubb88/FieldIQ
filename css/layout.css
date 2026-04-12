@@ -77,10 +77,14 @@
    Page Content
    The scrollable region below the topbar. All page views
    (home, school, etc.) are rendered inside this container.
+   The fadeIn animation defined in components.css triggers on
+   each route change — router.js re-renders this container's
+   contents, so the animation replays naturally.
    ---------------------------------------------------------- */
 .page-content {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
   background-color: var(--bg-base);
+  animation: fadeIn 0.25s ease;
 }

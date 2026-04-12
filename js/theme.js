@@ -217,16 +217,20 @@ function applyThemeFromTeam(teamObj) {
   const MIN_PRIMARY_BRIGHTNESS = 40;
   const MIN_CONTRAST_DELTA     = 30;
 
-  /* Check SCHOOLS_DATA for a colorOverride before using CFBD data */
+  /* Check SCHOOLS_DATA for a colorOverride before using CFBD data.
+     If an override is present, trust it completely — skip brightness
+     and contrast validation so intentional choices (e.g. black primary)
+     are not silently replaced by the fallback gray. */
   let rawPrimary   = teamObj && teamObj.color     ? teamObj.color     : '';
   let rawSecondary = teamObj && teamObj.alt_color ? teamObj.alt_color : '';
+  let hasOverride  = false;
   if (teamObj && teamObj.school && typeof SCHOOLS_DATA !== 'undefined') {
     const schoolEntry = (SCHOOLS_DATA.teams || []).find(function (t) {
       return t.name.replace(t.mascot, '').trim() === teamObj.school;
     });
     if (schoolEntry && schoolEntry.colorOverride) {
-      if (schoolEntry.colorOverride.primary)   rawPrimary   = schoolEntry.colorOverride.primary;
-      if (schoolEntry.colorOverride.secondary) rawSecondary = schoolEntry.colorOverride.secondary;
+      if (schoolEntry.colorOverride.primary)   { rawPrimary   = schoolEntry.colorOverride.primary;   hasOverride = true; }
+      if (schoolEntry.colorOverride.secondary) { rawSecondary = schoolEntry.colorOverride.secondary; hasOverride = true; }
     }
   }
 
@@ -234,14 +238,16 @@ function applyThemeFromTeam(teamObj) {
   let primary   = _normalizeHex(rawPrimary);
   let secondary = _normalizeHex(rawSecondary);
 
-  /* Validate primary — reject missing or too-dark colors */
-  if (!primary || _hexBrightness(primary) < MIN_PRIMARY_BRIGHTNESS) {
-    primary = FALLBACK_PRIMARY;
-  }
+  if (!hasOverride) {
+    /* Validate primary — reject missing or too-dark colors */
+    if (!primary || _hexBrightness(primary) < MIN_PRIMARY_BRIGHTNESS) {
+      primary = FALLBACK_PRIMARY;
+    }
 
-  /* Validate secondary — reject missing or colors too close to primary */
-  if (!secondary || Math.abs(_hexBrightness(secondary) - _hexBrightness(primary)) < MIN_CONTRAST_DELTA) {
-    secondary = FALLBACK_SECONDARY;
+    /* Validate secondary — reject missing or colors too close to primary */
+    if (!secondary || Math.abs(_hexBrightness(secondary) - _hexBrightness(primary)) < MIN_CONTRAST_DELTA) {
+      secondary = FALLBACK_SECONDARY;
+    }
   }
 
   /* Delegate to existing applyTheme — saves to localStorage automatically */
