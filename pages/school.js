@@ -21,7 +21,8 @@
 /* ----------------------------------------------------------
    Season Constant
    ---------------------------------------------------------- */
-const SCHOOL_YEAR = 2024;
+const SCHOOL_YEAR    = 2024;  /* Analytics season — all stat lenses use this year */
+const SCHEDULE_YEAR  = 2026;  /* Schedule lens — completely separate from analytics */
 
 /* ----------------------------------------------------------
    Active School — set dynamically in render() from URL params.
@@ -1168,6 +1169,19 @@ function renderLongTermSection() {
 }
 
 /* ----------------------------------------------------------
+   renderScheduleSection
+   Returns the Schedule section shell with a single loading
+   slot. _loadScheduleData() fills it once the fetch resolves.
+   ---------------------------------------------------------- */
+function renderScheduleSection() {
+  return `
+    <div class="school-section" data-section="schedule">
+      <h2 class="school-section-title">Schedule &mdash; ${SCHEDULE_YEAR}</h2>
+      <div id="schedule-content">${loadingHTML()}</div>
+    </div>`;
+}
+
+/* ----------------------------------------------------------
    renderPlaceholderSection
    Dashed placeholder for sections not yet built out.
    ---------------------------------------------------------- */
@@ -1198,6 +1212,7 @@ function renderSections() {
     if (section.id === 'campus-map')   return renderCampusMapSection();
     if (section.id === 'h2h')          return renderH2HSection();
     if (section.id === 'longterm')     return renderLongTermSection();
+    if (section.id === 'schedule')    return renderScheduleSection();
     return renderPlaceholderSection(section);
   }).join('');
 }
@@ -1308,6 +1323,7 @@ const SchoolPage = {
     _loadOverviewData(games, completed, hasGames, rank, lines, teamInfo, coachInfo);
     _loadAnalyticsData(completed, hasGames, lines, priorCompleted);
     _loadLongTermStrengthData();
+    _loadScheduleData();
   },
 
 };
@@ -2633,5 +2649,160 @@ async function _loadH2HData(team2Entry) {
 
   } catch (e) {
     setSection('h2h-results', errorHTML('Could not load H2H data. Check your connection and try again.'));
+  }
+}
+
+/* =============================================================
+   Phase 13b — Schedule Section
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   _renderScheduleGameRow
+   Builds a single game row for the schedule list.
+   Completed games show score + W/L badge + ATS result.
+   Future games show spread + O/U, or "Line TBD".
+
+   @param {Object} game  — CFBD game object
+   @param {Array}  lines — fetchScheduleLines() output
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function _renderScheduleGameRow(game, lines) {
+  const isHome   = game.homeTeam === SCHOOL_NAME;
+  const opponent = isHome ? game.awayTeam : game.homeTeam;
+  const location = game.neutralSite ? 'N' : (isHome ? 'vs' : '@');
+
+  let dateStr = '';
+  if (game.startDate) {
+    const d = new Date(game.startDate);
+    dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  const isCompleted = game.homePoints !== null && game.awayPoints !== null
+                   && game.homePoints !== undefined && game.awayPoints !== undefined;
+
+  /* Find matching line entry by game id */
+  const lineEntry  = (lines || []).find(function (l) { return l.id === game.id; });
+  const consensus  = lineEntry && Array.isArray(lineEntry.lines) && lineEntry.lines.length
+    ? (lineEntry.lines.find(function (l) { return l.provider === 'consensus'; }) || lineEntry.lines[0])
+    : null;
+
+  let rightCol = '';
+
+  if (isCompleted) {
+    const teamPts  = isHome ? game.homePoints : game.awayPoints;
+    const oppPts   = isHome ? game.awayPoints  : game.homePoints;
+    const won      = teamPts > oppPts;
+    const badgeClass = won ? 'result-w' : 'result-l';
+    const badgeLabel = won ? 'W' : 'L';
+
+    let atsHtml = '';
+    if (consensus && consensus.spread !== null && consensus.spread !== '') {
+      const spreadNum  = parseFloat(consensus.spread);
+      if (!isNaN(spreadNum)) {
+        const teamSpread = isHome ? spreadNum : -spreadNum;
+        const margin     = teamPts - oppPts;
+        let atsResult    = margin > -teamSpread ? 'Covered' : (margin === -teamSpread ? 'Push' : 'Lost ATS');
+        atsHtml = `<span class="schedule-game-ats">${atsResult}</span>`;
+      }
+    }
+
+    rightCol = `
+      <span class="schedule-game-score">${teamPts}\u2013${oppPts}</span>
+      <span class="result-badge ${badgeClass}">${badgeLabel}</span>
+      ${atsHtml}`;
+  } else {
+    let lineStr = 'Line TBD';
+    if (consensus) {
+      const spread = consensus.formattedSpread || consensus.spread;
+      const ou     = consensus.overUnder;
+      if (spread && ou) lineStr = `${spread} \u00b7 O/U ${ou}`;
+      else if (spread)  lineStr = spread;
+    }
+    rightCol = `<span class="schedule-game-line">${lineStr}</span>`;
+  }
+
+  const homeClass = isHome ? 'schedule-game--home' : 'schedule-game--away';
+
+  return `
+    <div class="schedule-game-row ${homeClass}">
+      <span class="schedule-game-location">${location}</span>
+      <span class="schedule-game-opponent">${opponent}</span>
+      <span class="schedule-game-date">${dateStr}</span>
+      <div class="schedule-game-right">${rightCol}</div>
+    </div>`;
+}
+
+/* ----------------------------------------------------------
+   renderSchedule
+   Builds the full schedule list grouped by week number.
+   Returns a friendly "not yet available" block if CFBD has
+   no data for SCHEDULE_YEAR (common before spring release).
+
+   @param {Array} games — fetchSchedule() output
+   @param {Array} lines — fetchScheduleLines() output
+   @returns {string} HTML string
+   ---------------------------------------------------------- */
+function renderSchedule(games, lines) {
+  if (!Array.isArray(games) || games.length === 0) {
+    return `
+      <div class="section-placeholder">
+        <div class="section-placeholder-label">2026 Schedule Not Yet Available</div>
+        <div class="section-placeholder-note">
+          Schedule data typically releases in spring. Check back closer to the season.
+        </div>
+      </div>`;
+  }
+
+  /* Sort by week, then start date within a week */
+  const sorted = games.slice().sort(function (a, b) {
+    const wkDiff = (a.week || 0) - (b.week || 0);
+    if (wkDiff !== 0) return wkDiff;
+    return new Date(a.startDate) - new Date(b.startDate);
+  });
+
+  /* Group by week number */
+  const byWeek  = {};
+  sorted.forEach(function (g) {
+    const wk = String(g.week || 0);
+    if (!byWeek[wk]) byWeek[wk] = [];
+    byWeek[wk].push(g);
+  });
+
+  const weekKeys = Object.keys(byWeek).sort(function (a, b) { return +a - +b; });
+
+  const html = weekKeys.map(function (wk) {
+    const label = +wk === 0 ? 'Week 0 / Preseason' : `Week ${wk}`;
+    const rows  = byWeek[wk].map(function (g) {
+      return _renderScheduleGameRow(g, lines);
+    }).join('');
+    return `
+      <div class="schedule-week">
+        <div class="schedule-week-label">${label}</div>
+        ${rows}
+      </div>`;
+  }).join('');
+
+  return `<div class="schedule-list">${html}</div>`;
+}
+
+/* ----------------------------------------------------------
+   _loadScheduleData
+   Fetches SCHEDULE_YEAR games + lines concurrently.
+   Each fetch failure falls back gracefully — lines failure
+   just means all future games show "Line TBD".
+   ---------------------------------------------------------- */
+async function _loadScheduleData() {
+  try {
+    const [gamesResult, linesResult] = await Promise.allSettled([
+      fetchSchedule(SCHOOL_NAME, SCHEDULE_YEAR),
+      fetchScheduleLines(SCHOOL_NAME, SCHEDULE_YEAR),
+    ]);
+
+    const games = gamesResult.status === 'fulfilled' ? gamesResult.value : [];
+    const lines = linesResult.status === 'fulfilled' ? linesResult.value : [];
+
+    setSection('schedule-content', renderSchedule(games, lines));
+  } catch (e) {
+    setSection('schedule-content', errorHTML('Schedule data unavailable.'));
   }
 }

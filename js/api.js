@@ -73,7 +73,12 @@ async function cfbdFetch(endpoint, params = {}) {
      const data = await fetchRankings(2024, 'regular');
    ---------------------------------------------------------- */
 async function fetchRankings(year, seasonType = 'regular') {
-  return cfbdFetch('/rankings', { year, seasonType });
+  const key = `rankings:${year}:${seasonType}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/rankings', { year, seasonType });
+  _cacheSet(key, data, _24H);
+  return data;
 }
 
 /* ----------------------------------------------------------
@@ -91,7 +96,13 @@ async function fetchRankings(year, seasonType = 'regular') {
      const games = await fetchGames(2024, 15, 'regular');
    ---------------------------------------------------------- */
 async function fetchGames(year, week, seasonType = 'regular', options = {}) {
-  return cfbdFetch('/games', { year, week, seasonType, ...options });
+  const classif = options.classification ? `:${options.classification}` : '';
+  const key = `games:${year}:w${week}:${seasonType}${classif}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/games', { year, week, seasonType, ...options });
+  _cacheSet(key, data, _24H);
+  return data;
 }
 
 /* ----------------------------------------------------------
@@ -106,6 +117,10 @@ async function fetchGames(year, week, seasonType = 'regular', options = {}) {
    @returns {Promise<Array<{title, pubDate, link}>>}
    ---------------------------------------------------------- */
 async function fetchESPNNews() {
+  const key = 'espnNews';
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+
   const ESPN_RSS_URL = 'https://www.espn.com/espn/rss/ncf/news';
   // rss2json.com converts RSS to JSON and handles CORS — no XML parsing needed
   const RSS2JSON_URL = 'https://api.rss2json.com/v1/api.json?rss_url=';
@@ -121,11 +136,14 @@ async function fetchESPNNews() {
     throw new Error(`ESPN news parse error: ${data.message || 'unexpected response'}`);
   }
 
-  return data.items.map(item => ({
+  const result = data.items.map(item => ({
     title:   item.title   || '(No title)',
     pubDate: item.pubDate || '',
     link:    item.link    || '',
   }));
+
+  _cacheSet(key, result, 30 * 60 * 1000); // 30 min — news should refresh
+  return result;
 }
 
 /* =============================================================
@@ -406,5 +424,50 @@ async function fetchPostseasonGames(school, year) {
   if (cached !== undefined) return cached;
   const data = await cfbdFetch('/games', { year, team: school, seasonType: 'postseason' });
   _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}
+
+/* =============================================================
+   Phase 13b — Schedule Section Fetch Functions
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   fetchSchedule
+   Returns all games (regular + postseason) for a team in a
+   given season. Intended for the Schedule lens which shows
+   the upcoming season (SCHEDULE_YEAR = 2026).
+
+   Cached 24 hours rather than indefinitely — future schedules
+   are added and updated throughout the year.
+
+   @param {string} school — e.g. 'Texas'
+   @param {number} year   — e.g. 2026
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchSchedule(school, year) {
+  const key = `schedule:${school}:${year}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/games', { year, team: school, seasonType: 'regular' });
+  _cacheSet(key, data, _24H); // 24h — schedule may update as season approaches
+  return data;
+}
+
+/* ----------------------------------------------------------
+   fetchScheduleLines
+   Returns betting lines for a team's schedule year.
+   Separate from fetchGameLines so future-season lines are
+   not cached indefinitely (they will change as lines open).
+
+   @param {string} school — e.g. 'Texas'
+   @param {number} year   — e.g. 2026
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchScheduleLines(school, year) {
+  const key = `scheduleLines:${school}:${year}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/lines', { year, team: school });
+  _cacheSet(key, data, _24H); // 24h — lines update as season approaches
   return data;
 }

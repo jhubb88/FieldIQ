@@ -1741,3 +1741,131 @@ body.is-home .page-content {
   color: var(--school-primary);
   white-space: nowrap;
 }
+
+/* =============================================================
+   Phase 13b — Schedule Section
+   Vertical list of game rows grouped by week number.
+   Home games have a colored left border; away games are neutral.
+   ============================================================= */
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.schedule-week {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ----------------------------------------------------------
+   Week Label
+   Section header separating each week's games.
+   ---------------------------------------------------------- */
+.schedule-week-label {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2px;
+}
+
+/* ----------------------------------------------------------
+   Game Row
+   Single game entry. Home games get --school-primary left
+   border; away games get a muted border.
+   ---------------------------------------------------------- */
+.schedule-game-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  border-left-width: 3px;
+  transition: var(--transition);
+}
+
+.schedule-game-row:hover {
+  border-color: color-mix(in srgb, var(--school-secondary) 60%, transparent);
+  border-left-color: var(--school-primary);
+}
+
+.schedule-game--home {
+  border-left-color: var(--school-primary);
+}
+
+.schedule-game--away {
+  border-left-color: var(--border-color);
+}
+
+/* vs / @ / N indicator */
+.schedule-game-location {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  min-width: 22px;
+  flex-shrink: 0;
+}
+
+/* Opponent team name */
+.schedule-game-opponent {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* Date — right-aligned after opponent */
+.schedule-game-date {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* Right column — holds score+badge+ATS or spread */
+.schedule-game-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 130px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Final score for completed games */
+.schedule-game-score {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+/* Spread / O/U for future games */
+.schedule-game-line {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ATS result for completed games */
+.schedule-game-ats {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--school-primary);
+}

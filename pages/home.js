@@ -11,7 +11,7 @@
    Season Constants
    Update these each season. All data fetches use these values.
    ---------------------------------------------------------- */
-const CURRENT_YEAR = 2025;
+const CURRENT_YEAR = 2026;
 const CURRENT_WEEK = 1;
 
 /* ----------------------------------------------------------
@@ -145,6 +145,21 @@ function _schoolLink(cfbdName, innerHtml) {
    ============================================================= */
 
 /* ----------------------------------------------------------
+   _hasRankingData
+   Returns true if a rankings API response contains at least
+   one poll with ranked teams. Used to detect offseason empty
+   responses so we can fall back to the prior year's final poll.
+   ---------------------------------------------------------- */
+function _hasRankingData(data) {
+  if (!Array.isArray(data) || !data.length) return false;
+  return data.some(function (w) {
+    return Array.isArray(w.polls) && w.polls.some(function (p) {
+      return Array.isArray(p.ranks) && p.ranks.length > 0;
+    });
+  });
+}
+
+/* ----------------------------------------------------------
    renderTop25
    Receives the full rankings API response array.
    Finds the most recent week with an "AP Top 25" poll entry.
@@ -175,23 +190,20 @@ function renderTop25(rankingsData) {
    wrapped in .school-link spans.
    ---------------------------------------------------------- */
 function renderGames(gamesData) {
-  const ranked = gamesData.filter(g => g.homeRank != null || g.awayRank != null);
+  /* Only show games involving at least one AP Top 25 team.
+     Sorted by best combined rank so the marquee matchup leads. */
+  const ranked = gamesData
+    .filter(g => g.homeRank != null || g.awayRank != null)
+    .sort((a, b) => {
+      const rankA = Math.min(a.homeRank ?? 99, a.awayRank ?? 99);
+      const rankB = Math.min(b.homeRank ?? 99, b.awayRank ?? 99);
+      return rankA - rankB;
+    });
 
-  const displayGames = ranked.length
-    ? ranked.sort((a, b) => {
-        const rankA = Math.min(a.homeRank ?? 99, a.awayRank ?? 99);
-        const rankB = Math.min(b.homeRank ?? 99, b.awayRank ?? 99);
-        return rankA - rankB;
-      })
-    : gamesData
-        .filter(g => g.homePoints != null && g.awayPoints != null)
-        .sort((a, b) =>
-          ((b.homePoints + b.awayPoints) - (a.homePoints + a.awayPoints))
-        )
-        .slice(0, 8);
+  const displayGames = ranked;
 
   if (!displayGames.length) {
-    return `<div class="home-list-row"><span class="home-list-label" style="opacity:0.5">No games found for Week ${CURRENT_WEEK}, ${CURRENT_YEAR}.</span></div>`;
+    return `<div class="home-list-row"><span class="home-list-label" style="opacity:0.5">No ranked matchups scheduled for Week ${CURRENT_WEEK}, ${CURRENT_YEAR}.</span></div>`;
   }
 
   return displayGames.map(g => {
@@ -376,7 +388,7 @@ const HomePage = {
 
         <!-- AP Top 25 -->
         <div class="home-card home-card--top25">
-          <div class="home-card-title">AP Top 25</div>
+          <div class="home-card-title" id="section-top25-title">AP Top 25</div>
           <div class="home-list" id="section-top25">${loadingRows(10)}</div>
         </div>
 
@@ -423,11 +435,36 @@ const HomePage = {
         fetchGames(HISTORY_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' }),
       ]);
 
-    /* AP Top 25 */
-    if (rankingsResult.status === 'fulfilled') {
-      setSection('section-top25', renderTop25(rankingsResult.value));
+    /* ----------------------------------------------------------
+       Rankings — if current year has no data (offseason), fall
+       back to prior year postseason and relabel both cards.
+       ---------------------------------------------------------- */
+    let rankingsData  = null;
+    let top25Label    = 'AP Top 25';
+    let cfpLabel      = 'CFP Rankings';
+
+    if (rankingsResult.status === 'fulfilled' && _hasRankingData(rankingsResult.value)) {
+      rankingsData = rankingsResult.value;
     } else {
-      setSection('section-top25', errorHTML(rankingsResult.reason?.message || 'Fetch failed'));
+      /* Offseason fallback — fetch prior year final standings */
+      try {
+        const fallback = await fetchRankings(CURRENT_YEAR - 1, 'postseason');
+        if (_hasRankingData(fallback)) {
+          rankingsData = fallback;
+          top25Label   = `Final ${CURRENT_YEAR - 1} AP Rankings`;
+          cfpLabel     = `Final ${CURRENT_YEAR - 1} CFP Rankings`;
+        }
+      } catch (e) { /* fallback failed — rankingsData stays null */ }
+    }
+
+    /* AP Top 25 */
+    const top25TitleEl = document.getElementById('section-top25-title');
+    if (top25TitleEl) top25TitleEl.textContent = top25Label;
+
+    if (rankingsData) {
+      setSection('section-top25', renderTop25(rankingsData));
+    } else {
+      setSection('section-top25', errorHTML('Rankings data unavailable.'));
     }
 
     /* Top Games */
@@ -451,17 +488,22 @@ const HomePage = {
       setSection('section-fact', errorHTML(historyResult.reason?.message || 'Fetch failed'));
     }
 
-    /* CFP Rankings — reuses rankings data, updates title if AP fallback used */
-    if (rankingsResult.status === 'fulfilled') {
-      const data   = rankingsResult.value;
-      const hasCFP = data.some(w => w.polls?.some(p =>
-        p.poll === 'College Football Playoff' && p.ranks?.length
-      ));
-      const titleEl = document.getElementById('section-cfp-title');
-      if (titleEl && !hasCFP) titleEl.textContent = 'CFP Rankings (AP Fallback)';
-      setSection('section-cfp', renderCFP(data));
+    /* CFP Rankings — reuses rankings data, updates title */
+    const cfpTitleEl = document.getElementById('section-cfp-title');
+
+    if (rankingsData) {
+      const hasCFP = rankingsData.some(function (w) {
+        return w.polls && w.polls.some(function (p) {
+          return p.poll === 'College Football Playoff' && p.ranks && p.ranks.length;
+        });
+      });
+      if (cfpTitleEl) {
+        cfpTitleEl.textContent = hasCFP ? cfpLabel : cfpLabel.replace('CFP', 'CFP (AP Fallback)');
+      }
+      setSection('section-cfp', renderCFP(rankingsData));
     } else {
-      setSection('section-cfp', errorHTML(rankingsResult.reason?.message || 'Fetch failed'));
+      if (cfpTitleEl) cfpTitleEl.textContent = cfpLabel;
+      setSection('section-cfp', errorHTML('Rankings data unavailable.'));
     }
   },
 
