@@ -12,7 +12,7 @@
    Update these each season. All data fetches use these values.
    ---------------------------------------------------------- */
 const CURRENT_YEAR = 2026;
-const CURRENT_WEEK = 1;
+const CURRENT_WEEK = null; /* null = offseason; set to integer week when season is live */
 
 /* ----------------------------------------------------------
    History Constants
@@ -203,7 +203,10 @@ function renderGames(gamesData) {
   const displayGames = ranked;
 
   if (!displayGames.length) {
-    return `<div class="home-list-row"><span class="home-list-label" style="opacity:0.5">No ranked matchups scheduled for Week ${CURRENT_WEEK}, ${CURRENT_YEAR}.</span></div>`;
+    const msg = CURRENT_WEEK !== null
+      ? `No ranked matchups scheduled for Week ${CURRENT_WEEK}, ${CURRENT_YEAR}.`
+      : `No games in progress \u2014 season starts in late August.`;
+    return `<div class="home-list-row"><span class="home-list-label" style="opacity:0.5">${msg}</span></div>`;
   }
 
   return displayGames.map(g => {
@@ -394,7 +397,7 @@ const HomePage = {
 
         <!-- Top Games of Week -->
         <div class="home-card home-card--games">
-          <div class="home-card-title">Top Games \u2014 Week ${CURRENT_WEEK}, ${CURRENT_YEAR}</div>
+          <div class="home-card-title">Top Games \u2014 ${CURRENT_WEEK !== null ? `Week ${CURRENT_WEEK}, ${CURRENT_YEAR}` : `Offseason ${CURRENT_YEAR}`}</div>
           <div class="home-list" id="section-games">${loadingRows(4)}</div>
         </div>
 
@@ -430,9 +433,11 @@ const HomePage = {
     const [rankingsResult, gamesResult, newsResult, historyResult] =
       await Promise.allSettled([
         fetchRankings(CURRENT_YEAR, 'regular'),
-        fetchGames(CURRENT_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' }),
+        CURRENT_WEEK !== null
+          ? fetchGames(CURRENT_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' })
+          : Promise.resolve([]),
         fetchESPNNews(),
-        fetchGames(HISTORY_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' }),
+        fetchGames(HISTORY_YEAR, CURRENT_WEEK !== null ? CURRENT_WEEK : 1, 'regular', { classification: 'fbs' }),
       ]);
 
     /* ----------------------------------------------------------

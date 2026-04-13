@@ -1336,7 +1336,8 @@
       "enrollment": 36996,
       "coachSalary": 4500000,
       "lat": 35.8031,
-      "lng": -78.722
+      "lng": -78.722,
+      "colorOverride": { "primary": "#CC0000", "secondary": "#FFFFFF" }
     },
     {
       "id": "north-carolina",
@@ -2300,7 +2301,8 @@
       "enrollment": 24730,
       "coachSalary": 1400000,
       "lat": 36.8892,
-      "lng": -76.3064
+      "lng": -76.3064,
+      "colorOverride": { "primary": "#002349", "secondary": "#9EA2A2" }
     },
     {
       "id": "south-alabama",
@@ -2692,7 +2694,8 @@
       "enrollment": 24412,
       "coachSalary": 600000,
       "lat": 39.682,
-      "lng": -75.753
+      "lng": -75.753,
+      "colorOverride": { "primary": "#00539F", "secondary": "#FFD200" }
     },
     {
       "id": "fiu",
@@ -2842,7 +2845,8 @@
       "enrollment": 25238,
       "coachSalary": 700000,
       "lat": 37.1956,
-      "lng": -93.2708
+      "lng": -93.2708,
+      "colorOverride": { "primary": "#6C0000", "secondary": "#FFFFFF" }
     },
     {
       "id": "new-mexico-state",
@@ -2882,7 +2886,8 @@
       "enrollment": 21588,
       "coachSalary": 800000,
       "lat": 30.7316,
-      "lng": -95.5512
+      "lng": -95.5512,
+      "colorOverride": { "primary": "#F78F1E", "secondary": "#FFFFFF" }
     },
     {
       "id": "utep",

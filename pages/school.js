@@ -21,7 +21,7 @@
 /* ----------------------------------------------------------
    Season Constant
    ---------------------------------------------------------- */
-const SCHOOL_YEAR    = 2024;  /* Analytics season — all stat lenses use this year */
+const SCHOOL_YEAR    = 2025;  /* Analytics season — all stat lenses use this year */
 const SCHEDULE_YEAR  = 2026;  /* Schedule lens — completely separate from analytics */
 
 /* ----------------------------------------------------------
@@ -1459,7 +1459,7 @@ function _extractAPRankings(weeklyData, school) {
 /* ----------------------------------------------------------
    renderRankingsHistory
    Builds the Rankings History subsection. Three rows, one per
-   season (2022–2024). Each row shows peak rank, final rank,
+   season (2023–2025). Each row shows peak rank, final rank,
    and weeks ranked. Unranked seasons show a clean label.
 
    @param {Array} seasons — array of { year, weeklyData, finalRank }
@@ -1828,7 +1828,7 @@ function renderBowlHistory(allGames) {
    a year-by-year W-L summary list.
 
    @param {Array} yearEntries — array of { year, wins, losses }
-                               for 2015–2024, regular season only
+                               for 2015–2025, regular season only
    @returns {string} HTML string
    ---------------------------------------------------------- */
 function renderLongTermRecord(yearEntries) {
@@ -1858,7 +1858,7 @@ function renderLongTermRecord(yearEntries) {
       <div class="stat-card">
         <div class="stat-card-title">10-Year Record</div>
         <div class="stat-card-value">${totalWins}\u2013${totalLosses}</div>
-        <div class="stat-card-sub">2015\u20132024 regular season</div>
+        <div class="stat-card-sub">2015\u20132025 regular season</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-title">Win %</div>
@@ -1922,7 +1922,7 @@ async function _loadLongTermStrengthData() {
     }
   })();
 
-  /* --- 2. NFL Draft Production (2020–2024) --- */
+  /* --- 2. NFL Draft Production (2020–2025) --- */
   (async function () {
     try {
       const picks = await fetchDraftPicks(SCHOOL_NAME);
@@ -1942,8 +1942,8 @@ async function _loadLongTermStrengthData() {
     }
   })();
 
-  /* --- 4. Bowl Game History (2000–2024) ---
-     2015–2024: use fetchSeasonRecord cache (seasonType 'both' includes postseason).
+  /* --- 4. Bowl Game History (2000–2025) ---
+     2015–2025: use fetchSeasonRecord cache (seasonType 'both' includes postseason).
      2000–2014: dedicated fetchPostseasonGames calls.
      Both run concurrently; all results flattened into one array.             */
   (async function () {
@@ -1984,7 +1984,7 @@ async function _loadLongTermStrengthData() {
     }
   })();
 
-  /* --- 5. Long-Term Record (2015–2024, regular season) --- */
+  /* --- 5. Long-Term Record (2015–2025, regular season) --- */
   (async function () {
     try {
       const years = [];

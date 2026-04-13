@@ -155,27 +155,27 @@ function computeNightGameRecord(completed, school) {
    Returns an empty array if no prior-year losses exist or
    if none of those opponents appear in the current season.
 
-   @param {Array}  completed2024 — current season completed games
-   @param {Array}  completed2023 — prior season completed games
-   @param {string} school        — CFBD team name
+   @param {Array}  completedCurrent — current season completed games
+   @param {Array}  completedPrior   — prior season completed games
+   @param {string} school           — CFBD team name
    @returns {Array<{ opponent: string, result: string, margin: string, won: boolean }>}
    ---------------------------------------------------------- */
-function computeRevengeGames(completed2024, completed2023, school) {
-  if (!Array.isArray(completed2023) || completed2023.length === 0) return [];
+function computeRevengeGames(completedCurrent, completedPrior, school) {
+  if (!Array.isArray(completedPrior) || completedPrior.length === 0) return [];
 
-  /* Step 1: collect every opponent who beat school in 2023.
+  /* Step 1: collect every opponent who beat school in the prior season.
      Ties (margin === 0) are excluded — only margin < 0 is a loss. */
   const beatenBy = new Set();
-  completed2023.forEach(function (g) {
+  completedPrior.forEach(function (g) {
     const { margin, opponent } = _sitMargin(g, school);
     if (margin < 0) beatenBy.add(opponent);
   });
 
   if (beatenBy.size === 0) return [];
 
-  /* Step 2: find 2024 games vs those opponents and record outcome */
+  /* Step 2: find current season games vs those opponents and record outcome */
   const revengeGames = [];
-  completed2024.forEach(function (g) {
+  completedCurrent.forEach(function (g) {
     const { isWin, margin, opponent } = _sitMargin(g, school);
     if (beatenBy.has(opponent)) {
       revengeGames.push({
