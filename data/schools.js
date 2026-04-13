@@ -19,7 +19,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 10250000,
       "lat": 33.2082,
       "lng": -87.5503,
-      "colorOverride": { "primary": "#9E1B32", "secondary": "#828A8F" }
+      "colorOverride": {
+        "primary": "#9E1B32",
+        "secondary": "#828A8F"
+      }
     },
     {
       "id": "arkansas",
@@ -38,7 +41,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 7000000,
       "lat": 36.0685,
       "lng": -94.176,
-      "colorOverride": { "primary": "#9D2235", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#9D2235",
+        "secondary": "#000000"
+      },
+      "coachOverride": {
+        "name": "Ryan Silverfield",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "auburn",
@@ -57,7 +68,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 6500000,
       "lat": 32.6027,
       "lng": -85.4894,
-      "colorOverride": { "primary": "#0C2340", "secondary": "#E87722" }
+      "colorOverride": {
+        "primary": "#0C2340",
+        "secondary": "#E87722"
+      },
+      "coachOverride": {
+        "name": "Alex Golesh",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "florida",
@@ -76,7 +95,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 7700000,
       "lat": 29.6499,
       "lng": -82.3486,
-      "colorOverride": { "primary": "#0021A5", "secondary": "#FA4616" }
+      "colorOverride": {
+        "primary": "#0021A5",
+        "secondary": "#FA4616"
+      },
+      "coachOverride": {
+        "name": "Jon Sumrall",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "georgia",
@@ -95,7 +122,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 13000000,
       "lat": 33.9497,
       "lng": -83.3733,
-      "colorOverride": { "primary": "#BA0C2F", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#BA0C2F",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "kentucky",
@@ -114,7 +144,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 38.0226,
       "lng": -84.5052,
-      "colorOverride": { "primary": "#0033A0", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#0033A0",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Will Stein",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "lsu",
@@ -133,7 +171,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 10000000,
       "lat": 30.4122,
       "lng": -91.1837,
-      "colorOverride": { "primary": "#461D7C", "secondary": "#FDD023" }
+      "colorOverride": {
+        "primary": "#461D7C",
+        "secondary": "#FDD023"
+      },
+      "coachOverride": {
+        "name": "Lane Kiffin",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "mississippi-state",
@@ -152,7 +198,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 33.4554,
       "lng": -88.7895,
-      "colorOverride": { "primary": "#660000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#660000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "missouri",
@@ -171,7 +220,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 38.9357,
       "lng": -92.3338,
-      "colorOverride": { "primary": "#F1B82D", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#F1B82D",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "ole-miss",
@@ -190,7 +242,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 9000000,
       "lat": 34.364,
       "lng": -89.5302,
-      "colorOverride": { "primary": "#14213D", "secondary": "#CE1126" }
+      "colorOverride": {
+        "primary": "#14213D",
+        "secondary": "#CE1126"
+      }
     },
     {
       "id": "oklahoma",
@@ -209,7 +264,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 8500000,
       "lat": 35.2058,
       "lng": -97.4438,
-      "colorOverride": { "primary": "#841617", "secondary": "#FDF9D8" }
+      "colorOverride": {
+        "primary": "#841617",
+        "secondary": "#FDF9D8"
+      }
     },
     {
       "id": "south-carolina",
@@ -228,7 +286,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 33.9721,
       "lng": -81.0723,
-      "colorOverride": { "primary": "#73000A", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#73000A",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "tennessee",
@@ -247,7 +308,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 9500000,
       "lat": 35.9551,
       "lng": -83.9252,
-      "colorOverride": { "primary": "#FF8200", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#FF8200",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "texas",
@@ -259,14 +323,17 @@ const SCHOOLS_DATA = {
       "primaryColor": "#BF5700",
       "secondaryColor": "#FFFFFF",
       "mascot": "Longhorns",
-      "stadium": "Darrell K Royal–Texas Memorial Stadium",
+      "stadium": "Darrell K Royal\u2013Texas Memorial Stadium",
       "stadiumCapacity": 100119,
       "founded": 1883,
       "enrollment": 51032,
       "coachSalary": 10000000,
       "lat": 30.2838,
       "lng": -97.7326,
-      "colorOverride": { "primary": "#BF5700", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#BF5700",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "texas-am",
@@ -285,7 +352,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 9500000,
       "lat": 30.61,
       "lng": -96.3403,
-      "colorOverride": { "primary": "#500000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#500000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "vanderbilt",
@@ -304,7 +374,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 36.1445,
       "lng": -86.8138,
-      "colorOverride": { "primary": "#866D4B", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#866D4B",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "illinois",
@@ -323,7 +396,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4250000,
       "lat": 40.0958,
       "lng": -88.2356,
-      "colorOverride": { "primary": "#E84A27", "secondary": "#13294B" }
+      "colorOverride": {
+        "primary": "#E84A27",
+        "secondary": "#13294B"
+      }
     },
     {
       "id": "indiana",
@@ -342,7 +418,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 11600000,
       "lat": 39.1839,
       "lng": -86.5256,
-      "colorOverride": { "primary": "#990000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#990000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "iowa",
@@ -361,7 +440,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5600000,
       "lat": 41.6585,
       "lng": -91.5507,
-      "colorOverride": { "primary": "#FFCD00", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#FFCD00",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "maryland",
@@ -380,7 +462,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 38.9896,
       "lng": -76.945,
-      "colorOverride": { "primary": "#E03A3E", "secondary": "#FFD520" }
+      "colorOverride": {
+        "primary": "#E03A3E",
+        "secondary": "#FFD520"
+      }
     },
     {
       "id": "michigan",
@@ -399,7 +484,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 6110000,
       "lat": 42.2659,
       "lng": -83.7487,
-      "colorOverride": { "primary": "#00274C", "secondary": "#FFCB05" }
+      "colorOverride": {
+        "primary": "#00274C",
+        "secondary": "#FFCB05"
+      },
+      "coachOverride": {
+        "name": "Kyle Whittingham",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "michigan-state",
@@ -418,7 +511,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 7350000,
       "lat": 42.7279,
       "lng": -84.4822,
-      "colorOverride": { "primary": "#18453B", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#18453B",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Pat Fitzgerald",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "minnesota",
@@ -437,7 +538,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 44.9779,
       "lng": -93.2219,
-      "colorOverride": { "primary": "#7A0019", "secondary": "#FFCC33" }
+      "colorOverride": {
+        "primary": "#7A0019",
+        "secondary": "#FFCC33"
+      }
     },
     {
       "id": "nebraska",
@@ -456,7 +560,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 7500000,
       "lat": 40.8202,
       "lng": -96.7052,
-      "colorOverride": { "primary": "#E41C38", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#E41C38",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "northwestern",
@@ -475,7 +582,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 42.0586,
       "lng": -87.6706,
-      "colorOverride": { "primary": "#4E2A84", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#4E2A84",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "ohio-state",
@@ -494,7 +604,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 12500000,
       "lat": 40.0016,
       "lng": -83.0197,
-      "colorOverride": { "primary": "#BB0000", "secondary": "#666666" }
+      "colorOverride": {
+        "primary": "#BB0000",
+        "secondary": "#666666"
+      }
     },
     {
       "id": "oregon",
@@ -513,7 +626,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 11000000,
       "lat": 44.0566,
       "lng": -123.0681,
-      "colorOverride": { "primary": "#154733", "secondary": "#FEE123" }
+      "colorOverride": {
+        "primary": "#154733",
+        "secondary": "#FEE123"
+      }
     },
     {
       "id": "oregon-state",
@@ -532,7 +648,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 2250000,
       "lat": 44.5638,
       "lng": -123.2776,
-      "colorOverride": { "primary": "#000000", "secondary": "#FF6600" }
+      "colorOverride": {
+        "primary": "#000000",
+        "secondary": "#FF6600"
+      },
+      "coachOverride": {
+        "name": "JaMarcus Shephard",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "penn-state",
@@ -551,7 +675,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 7000000,
       "lat": 40.8121,
       "lng": -77.856,
-      "colorOverride": { "primary": "#001E44", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#001E44",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Matt Campbell",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "purdue",
@@ -570,7 +702,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 6000000,
       "lat": 40.4565,
       "lng": -86.9999,
-      "colorOverride": { "primary": "#CEB888", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CEB888",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "rutgers",
@@ -589,7 +724,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4000000,
       "lat": 40.5226,
       "lng": -74.4518,
-      "colorOverride": { "primary": "#CC0033", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#CC0033",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "usc",
@@ -608,7 +746,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 34.0141,
       "lng": -118.2879,
-      "colorOverride": { "primary": "#990000", "secondary": "#FFC72C" }
+      "colorOverride": {
+        "primary": "#990000",
+        "secondary": "#FFC72C"
+      }
     },
     {
       "id": "ucla",
@@ -627,7 +768,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 34.1614,
       "lng": -118.1676,
-      "colorOverride": { "primary": "#2D68C4", "secondary": "#F2A900" }
+      "colorOverride": {
+        "primary": "#2D68C4",
+        "secondary": "#F2A900"
+      },
+      "coachOverride": {
+        "name": "Bob Chesney",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "washington",
@@ -646,7 +795,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 7575000,
       "lat": 47.6499,
       "lng": -122.3026,
-      "colorOverride": { "primary": "#33006F", "secondary": "#E8D3A2" }
+      "colorOverride": {
+        "primary": "#33006F",
+        "secondary": "#E8D3A2"
+      }
     },
     {
       "id": "washington-state",
@@ -664,7 +816,12 @@ const SCHOOLS_DATA = {
       "enrollment": 21000,
       "coachSalary": 1500000,
       "lat": 46.7298,
-      "lng": -117.1696
+      "lng": -117.1696,
+      "coachOverride": {
+        "name": "Kirby Moore",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "wisconsin",
@@ -683,7 +840,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 43.0701,
       "lng": -89.412,
-      "colorOverride": { "primary": "#C5050C", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#C5050C",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "arizona",
@@ -702,7 +862,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 3400000,
       "lat": 32.2296,
       "lng": -110.949,
-      "colorOverride": { "primary": "#CC0033", "secondary": "#003366" }
+      "colorOverride": {
+        "primary": "#CC0033",
+        "secondary": "#003366"
+      }
     },
     {
       "id": "arizona-state",
@@ -721,7 +884,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4000000,
       "lat": 33.4263,
       "lng": -111.9326,
-      "colorOverride": { "primary": "#8C1D40", "secondary": "#FFC627" }
+      "colorOverride": {
+        "primary": "#8C1D40",
+        "secondary": "#FFC627"
+      }
     },
     {
       "id": "baylor",
@@ -740,7 +906,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 31.5593,
       "lng": -97.1172,
-      "colorOverride": { "primary": "#154734", "secondary": "#FFB81C" }
+      "colorOverride": {
+        "primary": "#154734",
+        "secondary": "#FFB81C"
+      }
     },
     {
       "id": "byu",
@@ -759,7 +928,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 40.2574,
       "lng": -111.6546,
-      "colorOverride": { "primary": "#002E5D", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#002E5D",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "cincinnati",
@@ -778,7 +950,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 3500000,
       "lat": 39.1315,
       "lng": -84.5161,
-      "colorOverride": { "primary": "#E00122", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#E00122",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "colorado",
@@ -797,7 +972,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 9000000,
       "lat": 40.0076,
       "lng": -105.2669,
-      "colorOverride": { "primary": "#CFB87C", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CFB87C",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "houston",
@@ -816,7 +994,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 29.7214,
       "lng": -95.4103,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "iowa-state",
@@ -835,7 +1016,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 7000000,
       "lat": 42.014,
       "lng": -93.6358,
-      "colorOverride": { "primary": "#C8102E", "secondary": "#F1BE48" }
+      "colorOverride": {
+        "primary": "#C8102E",
+        "secondary": "#F1BE48"
+      },
+      "coachOverride": {
+        "name": "Jimmy Rogers",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "kansas",
@@ -854,7 +1043,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 6650000,
       "lat": 38.9635,
       "lng": -95.2494,
-      "colorOverride": { "primary": "#0051A5", "secondary": "#E8000D" }
+      "colorOverride": {
+        "primary": "#0051A5",
+        "secondary": "#E8000D"
+      }
     },
     {
       "id": "kansas-state",
@@ -873,7 +1065,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 6000000,
       "lat": 39.2014,
       "lng": -96.5936,
-      "colorOverride": { "primary": "#512888", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#512888",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Collin Klein",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "oklahoma-state",
@@ -892,7 +1092,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 6875000,
       "lat": 36.1256,
       "lng": -97.0648,
-      "colorOverride": { "primary": "#FF7300", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#FF7300",
+        "secondary": "#000000"
+      },
+      "coachOverride": {
+        "name": "Eric Morris",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "tcu",
@@ -911,7 +1119,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 32.7096,
       "lng": -97.3658,
-      "colorOverride": { "primary": "#4D1979", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#4D1979",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "texas-tech",
@@ -930,7 +1141,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5500000,
       "lat": 33.5906,
       "lng": -101.8746,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "ucf",
@@ -949,7 +1163,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 28.6018,
       "lng": -81.191,
-      "colorOverride": { "primary": "#BA9B37", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#BA9B37",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "utah",
@@ -968,7 +1185,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 6900000,
       "lat": 40.7601,
       "lng": -111.8479,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#000000"
+      },
+      "coachOverride": {
+        "name": "Morgan Scalley",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "west-virginia",
@@ -987,7 +1212,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5000000,
       "lat": 39.649,
       "lng": -79.9551,
-      "colorOverride": { "primary": "#002855", "secondary": "#EAAA00" }
+      "colorOverride": {
+        "primary": "#002855",
+        "secondary": "#EAAA00"
+      }
     },
     {
       "id": "boston-college",
@@ -1006,7 +1234,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 3000000,
       "lat": 42.3357,
       "lng": -71.1685,
-      "colorOverride": { "primary": "#98002E", "secondary": "#BC9B6A" }
+      "colorOverride": {
+        "primary": "#98002E",
+        "secondary": "#BC9B6A"
+      }
     },
     {
       "id": "california",
@@ -1025,7 +1256,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 3500000,
       "lat": 37.8707,
       "lng": -122.2504,
-      "colorOverride": { "primary": "#003262", "secondary": "#FDB515" }
+      "colorOverride": {
+        "primary": "#003262",
+        "secondary": "#FDB515"
+      },
+      "coachOverride": {
+        "name": "Tosh Lupoi",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "clemson",
@@ -1044,7 +1283,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 11447025,
       "lat": 34.6781,
       "lng": -82.8437,
-      "colorOverride": { "primary": "#F56600", "secondary": "#522D80" }
+      "colorOverride": {
+        "primary": "#F56600",
+        "secondary": "#522D80"
+      }
     },
     {
       "id": "duke",
@@ -1063,7 +1305,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 36.0007,
       "lng": -78.9368,
-      "colorOverride": { "primary": "#012169", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#012169",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "florida-state",
@@ -1082,7 +1327,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5435000,
       "lat": 30.4391,
       "lng": -84.3064,
-      "colorOverride": { "primary": "#782F40", "secondary": "#CEB888" }
+      "colorOverride": {
+        "primary": "#782F40",
+        "secondary": "#CEB888"
+      }
     },
     {
       "id": "georgia-tech",
@@ -1101,7 +1349,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4000000,
       "lat": 33.7726,
       "lng": -84.392,
-      "colorOverride": { "primary": "#B3A369", "secondary": "#003057" }
+      "colorOverride": {
+        "primary": "#B3A369",
+        "secondary": "#003057"
+      }
     },
     {
       "id": "louisville",
@@ -1120,7 +1371,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 5500000,
       "lat": 38.2128,
       "lng": -85.7628,
-      "colorOverride": { "primary": "#AD0000", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#AD0000",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "miami-fl",
@@ -1139,7 +1393,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 8302883,
       "lat": 25.958,
       "lng": -80.2389,
-      "colorOverride": { "primary": "#005030", "secondary": "#F47321" }
+      "colorOverride": {
+        "primary": "#005030",
+        "secondary": "#F47321"
+      }
     },
     {
       "id": "nc-state",
@@ -1158,7 +1415,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4500000,
       "lat": 35.8031,
       "lng": -78.722,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "north-carolina",
@@ -1177,7 +1437,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 10100000,
       "lat": 35.9049,
       "lng": -79.0469,
-      "colorOverride": { "primary": "#7BAFD4", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#7BAFD4",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "pittsburgh",
@@ -1196,7 +1459,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 7259909,
       "lat": 40.4468,
       "lng": -80.0158,
-      "colorOverride": { "primary": "#003594", "secondary": "#FFB81C" }
+      "colorOverride": {
+        "primary": "#003594",
+        "secondary": "#FFB81C"
+      }
     },
     {
       "id": "smu",
@@ -1215,7 +1481,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 32.8417,
       "lng": -96.7838,
-      "colorOverride": { "primary": "#354CA1", "secondary": "#C8102E" }
+      "colorOverride": {
+        "primary": "#354CA1",
+        "secondary": "#C8102E"
+      }
     },
     {
       "id": "stanford",
@@ -1234,7 +1503,15 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 37.4346,
       "lng": -122.1609,
-      "colorOverride": { "primary": "#8C1515", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#8C1515",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Tavita Pritchard",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "syracuse",
@@ -1253,7 +1530,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 3500000,
       "lat": 43.0362,
       "lng": -76.1364,
-      "colorOverride": { "primary": "#F76900", "secondary": "#000E54" }
+      "colorOverride": {
+        "primary": "#F76900",
+        "secondary": "#000E54"
+      }
     },
     {
       "id": "virginia",
@@ -1272,7 +1552,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 4000000,
       "lat": 38.0318,
       "lng": -78.5108,
-      "colorOverride": { "primary": "#232D4B", "secondary": "#E57200" }
+      "colorOverride": {
+        "primary": "#232D4B",
+        "secondary": "#E57200"
+      }
     },
     {
       "id": "virginia-tech",
@@ -1291,7 +1574,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 4787500,
       "lat": 37.2198,
       "lng": -80.4207,
-      "colorOverride": { "primary": "#630031", "secondary": "#CF4420" }
+      "colorOverride": {
+        "primary": "#630031",
+        "secondary": "#CF4420"
+      },
+      "coachOverride": {
+        "name": "James Franklin",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "wake-forest",
@@ -1310,7 +1601,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 36.0963,
       "lng": -80.2492,
-      "colorOverride": { "primary": "#9E7E38", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#9E7E38",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "army",
@@ -1329,7 +1623,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2350000,
       "lat": 41.3918,
       "lng": -73.9607,
-      "colorOverride": { "primary": "#000000", "secondary": "#D4BF91" }
+      "colorOverride": {
+        "primary": "#000000",
+        "secondary": "#D4BF91"
+      }
     },
     {
       "id": "charlotte",
@@ -1348,7 +1645,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 35.3076,
       "lng": -80.732,
-      "colorOverride": { "primary": "#046A38", "secondary": "#B9975B" }
+      "colorOverride": {
+        "primary": "#046A38",
+        "secondary": "#B9975B"
+      }
     },
     {
       "id": "east-carolina",
@@ -1367,7 +1667,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1800000,
       "lat": 35.6093,
       "lng": -77.3673,
-      "colorOverride": { "primary": "#592A8A", "secondary": "#FDC82F" }
+      "colorOverride": {
+        "primary": "#592A8A",
+        "secondary": "#FDC82F"
+      }
     },
     {
       "id": "florida-atlantic",
@@ -1386,7 +1689,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1800000,
       "lat": 26.3762,
       "lng": -80.1038,
-      "colorOverride": { "primary": "#003366", "secondary": "#CC0000" }
+      "colorOverride": {
+        "primary": "#003366",
+        "secondary": "#CC0000"
+      }
     },
     {
       "id": "memphis",
@@ -1405,7 +1711,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 2250000,
       "lat": 35.1454,
       "lng": -90.0285,
-      "colorOverride": { "primary": "#003087", "secondary": "#898D8D" }
+      "colorOverride": {
+        "primary": "#003087",
+        "secondary": "#898D8D"
+      },
+      "coachOverride": {
+        "name": "Charles Huff",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "navy",
@@ -1424,7 +1738,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 38.9831,
       "lng": -76.4918,
-      "colorOverride": { "primary": "#00205B", "secondary": "#C5B783" }
+      "colorOverride": {
+        "primary": "#00205B",
+        "secondary": "#C5B783"
+      }
     },
     {
       "id": "north-texas",
@@ -1443,7 +1760,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 33.2148,
       "lng": -97.1572,
-      "colorOverride": { "primary": "#00853E", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#00853E",
+        "secondary": "#FFFFFF"
+      },
+      "coachOverride": {
+        "name": "Neal Brown",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "rice",
@@ -1462,7 +1787,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 29.7164,
       "lng": -95.4105,
-      "colorOverride": { "primary": "#002469", "secondary": "#C1C6C8" }
+      "colorOverride": {
+        "primary": "#002469",
+        "secondary": "#C1C6C8"
+      }
     },
     {
       "id": "south-florida",
@@ -1481,7 +1809,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 2500000,
       "lat": 27.9759,
       "lng": -82.5033,
-      "colorOverride": { "primary": "#006747", "secondary": "#CFC493" }
+      "colorOverride": {
+        "primary": "#006747",
+        "secondary": "#CFC493"
+      },
+      "coachOverride": {
+        "name": "Brian Hartline",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "temple",
@@ -1500,7 +1836,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1800000,
       "lat": 39.9008,
       "lng": -75.1675,
-      "colorOverride": { "primary": "#9D2235", "secondary": "#63666A" }
+      "colorOverride": {
+        "primary": "#9D2235",
+        "secondary": "#63666A"
+      }
     },
     {
       "id": "tulane",
@@ -1519,7 +1858,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 3000000,
       "lat": 29.9417,
       "lng": -90.1212,
-      "colorOverride": { "primary": "#006747", "secondary": "#418FDE" }
+      "colorOverride": {
+        "primary": "#006747",
+        "secondary": "#418FDE"
+      },
+      "coachOverride": {
+        "name": "Will Hall",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "tulsa",
@@ -1538,7 +1885,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 36.1539,
       "lng": -95.9495,
-      "colorOverride": { "primary": "#002D62", "secondary": "#C8102E" }
+      "colorOverride": {
+        "primary": "#002D62",
+        "secondary": "#C8102E"
+      }
     },
     {
       "id": "utsa",
@@ -1557,7 +1907,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2500000,
       "lat": 29.4189,
       "lng": -98.4814,
-      "colorOverride": { "primary": "#002A5C", "secondary": "#F15A22" }
+      "colorOverride": {
+        "primary": "#002A5C",
+        "secondary": "#F15A22"
+      }
     },
     {
       "id": "uab",
@@ -1576,7 +1929,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1450000,
       "lat": 33.5207,
       "lng": -86.8133,
-      "colorOverride": { "primary": "#1E6B52", "secondary": "#F4C51A" }
+      "colorOverride": {
+        "primary": "#1E6B52",
+        "secondary": "#F4C51A"
+      }
     },
     {
       "id": "air-force",
@@ -1595,7 +1951,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 38.9973,
       "lng": -104.8611,
-      "colorOverride": { "primary": "#003087", "secondary": "#8A8D8F" }
+      "colorOverride": {
+        "primary": "#003087",
+        "secondary": "#8A8D8F"
+      }
     },
     {
       "id": "boise-state",
@@ -1614,7 +1973,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2000000,
       "lat": 43.6028,
       "lng": -116.2002,
-      "colorOverride": { "primary": "#0033A0", "secondary": "#D64309" }
+      "colorOverride": {
+        "primary": "#0033A0",
+        "secondary": "#D64309"
+      }
     },
     {
       "id": "colorado-state",
@@ -1633,7 +1995,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 1900000,
       "lat": 40.575,
       "lng": -105.0857,
-      "colorOverride": { "primary": "#1E4D2B", "secondary": "#C8C372" }
+      "colorOverride": {
+        "primary": "#1E4D2B",
+        "secondary": "#C8C372"
+      },
+      "coachOverride": {
+        "name": "Jim L. Mora",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "fresno-state",
@@ -1652,7 +2022,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1100000,
       "lat": 36.8097,
       "lng": -119.7478,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#13294B" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#13294B"
+      }
     },
     {
       "id": "hawaii",
@@ -1671,7 +2044,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1200000,
       "lat": 21.2986,
       "lng": -157.8176,
-      "colorOverride": { "primary": "#024731", "secondary": "#C8B560" }
+      "colorOverride": {
+        "primary": "#024731",
+        "secondary": "#C8B560"
+      }
     },
     {
       "id": "nevada",
@@ -1690,7 +2066,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 39.538,
       "lng": -119.816,
-      "colorOverride": { "primary": "#003366", "secondary": "#807F84" }
+      "colorOverride": {
+        "primary": "#003366",
+        "secondary": "#807F84"
+      }
     },
     {
       "id": "new-mexico",
@@ -1709,7 +2088,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 35.0844,
       "lng": -106.6504,
-      "colorOverride": { "primary": "#BA0C2F", "secondary": "#63666A" }
+      "colorOverride": {
+        "primary": "#BA0C2F",
+        "secondary": "#63666A"
+      }
     },
     {
       "id": "san-diego-state",
@@ -1728,7 +2110,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1853100,
       "lat": 32.7831,
       "lng": -117.1196,
-      "colorOverride": { "primary": "#A6192E", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#A6192E",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "san-jose-state",
@@ -1747,7 +2132,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 37.3496,
       "lng": -121.9243,
-      "colorOverride": { "primary": "#0055A2", "secondary": "#E5A823" }
+      "colorOverride": {
+        "primary": "#0055A2",
+        "secondary": "#E5A823"
+      }
     },
     {
       "id": "unlv",
@@ -1766,7 +2154,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 3500000,
       "lat": 36.0908,
       "lng": -115.1833,
-      "colorOverride": { "primary": "#CF0A2C", "secondary": "#63666A" }
+      "colorOverride": {
+        "primary": "#CF0A2C",
+        "secondary": "#63666A"
+      }
     },
     {
       "id": "utah-state",
@@ -1785,7 +2176,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2000000,
       "lat": 41.7484,
       "lng": -111.8099,
-      "colorOverride": { "primary": "#0F2439", "secondary": "#8A9296" }
+      "colorOverride": {
+        "primary": "#0F2439",
+        "secondary": "#8A9296"
+      }
     },
     {
       "id": "wyoming",
@@ -1804,7 +2198,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2000000,
       "lat": 41.3163,
       "lng": -105.5666,
-      "colorOverride": { "primary": "#492F24", "secondary": "#FFC425" }
+      "colorOverride": {
+        "primary": "#492F24",
+        "secondary": "#FFC425"
+      }
     },
     {
       "id": "appalachian-state",
@@ -1823,7 +2220,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1800000,
       "lat": 36.2135,
       "lng": -81.6948,
-      "colorOverride": { "primary": "#FFB300", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#FFB300",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "arkansas-state",
@@ -1842,7 +2242,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1200000,
       "lat": 35.8325,
       "lng": -90.6629,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "coastal-carolina",
@@ -1861,7 +2264,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 33.7938,
       "lng": -79.0305,
-      "colorOverride": { "primary": "#006F71", "secondary": "#A27752" }
+      "colorOverride": {
+        "primary": "#006F71",
+        "secondary": "#A27752"
+      },
+      "coachOverride": {
+        "name": "Ryan Beard",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "georgia-southern",
@@ -1880,7 +2291,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 32.411,
       "lng": -81.7874,
-      "colorOverride": { "primary": "#011E41", "secondary": "#C8A84B" }
+      "colorOverride": {
+        "primary": "#011E41",
+        "secondary": "#C8A84B"
+      }
     },
     {
       "id": "georgia-state",
@@ -1899,7 +2313,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1400000,
       "lat": 33.7354,
       "lng": -84.3893,
-      "colorOverride": { "primary": "#0039A6", "secondary": "#CC0000" }
+      "colorOverride": {
+        "primary": "#0039A6",
+        "secondary": "#CC0000"
+      }
     },
     {
       "id": "james-madison",
@@ -1918,7 +2335,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 1200000,
       "lat": 38.434,
       "lng": -78.8696,
-      "colorOverride": { "primary": "#450084", "secondary": "#C6A012" }
+      "colorOverride": {
+        "primary": "#450084",
+        "secondary": "#C6A012"
+      },
+      "coachOverride": {
+        "name": "Billy Napier",
+        "hireYear": 2026,
+        "salary": null
+      }
     },
     {
       "id": "louisiana",
@@ -1937,7 +2362,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2000000,
       "lat": 30.2074,
       "lng": -92.0386,
-      "colorOverride": { "primary": "#CE181E", "secondary": "#010101" }
+      "colorOverride": {
+        "primary": "#CE181E",
+        "secondary": "#010101"
+      }
     },
     {
       "id": "louisiana-monroe",
@@ -1956,7 +2384,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 32.5293,
       "lng": -92.0735,
-      "colorOverride": { "primary": "#800000", "secondary": "#C0C0C0" }
+      "colorOverride": {
+        "primary": "#800000",
+        "secondary": "#C0C0C0"
+      }
     },
     {
       "id": "marshall",
@@ -1975,7 +2406,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 38.4199,
       "lng": -82.4401,
-      "colorOverride": { "primary": "#009B77", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#009B77",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "old-dominion",
@@ -1994,7 +2428,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1400000,
       "lat": 36.8892,
       "lng": -76.3064,
-      "colorOverride": { "primary": "#002349", "secondary": "#9EA2A2" }
+      "colorOverride": {
+        "primary": "#002349",
+        "secondary": "#9EA2A2"
+      }
     },
     {
       "id": "south-alabama",
@@ -2013,7 +2450,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 2000000,
       "lat": 30.6954,
       "lng": -88.0531,
-      "colorOverride": { "primary": "#00205C", "secondary": "#BA0C2F" }
+      "colorOverride": {
+        "primary": "#00205C",
+        "secondary": "#BA0C2F"
+      }
     },
     {
       "id": "southern-miss",
@@ -2032,7 +2472,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1200000,
       "lat": 31.3271,
       "lng": -89.3258,
-      "colorOverride": { "primary": "#FFD046", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#FFD046",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "texas-state",
@@ -2051,7 +2494,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1800000,
       "lat": 29.8893,
       "lng": -97.9381,
-      "colorOverride": { "primary": "#501214", "secondary": "#8A9296" }
+      "colorOverride": {
+        "primary": "#501214",
+        "secondary": "#8A9296"
+      }
     },
     {
       "id": "troy",
@@ -2070,7 +2516,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1200000,
       "lat": 31.8042,
       "lng": -85.975,
-      "colorOverride": { "primary": "#8B2035", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#8B2035",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "akron",
@@ -2089,7 +2538,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 41.082,
       "lng": -81.5265,
-      "colorOverride": { "primary": "#041E42", "secondary": "#A89968" }
+      "colorOverride": {
+        "primary": "#041E42",
+        "secondary": "#A89968"
+      }
     },
     {
       "id": "ball-state",
@@ -2108,7 +2560,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 40.2043,
       "lng": -85.4085,
-      "colorOverride": { "primary": "#BA0C2F", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#BA0C2F",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "bowling-green",
@@ -2127,7 +2582,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 41.3781,
       "lng": -83.6477,
-      "colorOverride": { "primary": "#4F2C1D", "secondary": "#FF6600" }
+      "colorOverride": {
+        "primary": "#4F2C1D",
+        "secondary": "#FF6600"
+      }
     },
     {
       "id": "buffalo",
@@ -2146,7 +2604,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 800000,
       "lat": 43.0014,
       "lng": -78.7895,
-      "colorOverride": { "primary": "#005BBB", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#005BBB",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "central-michigan",
@@ -2165,7 +2626,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 43.5902,
       "lng": -84.781,
-      "colorOverride": { "primary": "#6A0032", "secondary": "#FFC82E" }
+      "colorOverride": {
+        "primary": "#6A0032",
+        "secondary": "#FFC82E"
+      }
     },
     {
       "id": "eastern-michigan",
@@ -2184,7 +2648,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 42.2449,
       "lng": -83.6277,
-      "colorOverride": { "primary": "#006633", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#006633",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "kent-state",
@@ -2203,7 +2670,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 525000,
       "lat": 41.1473,
       "lng": -81.3471,
-      "colorOverride": { "primary": "#002664", "secondary": "#EAAB00" }
+      "colorOverride": {
+        "primary": "#002664",
+        "secondary": "#EAAB00"
+      }
     },
     {
       "id": "miami-oh",
@@ -2222,7 +2692,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1110000,
       "lat": 39.511,
       "lng": -84.7355,
-      "colorOverride": { "primary": "#B61E2E", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#B61E2E",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "northern-illinois",
@@ -2241,7 +2714,16 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 41.9356,
       "lng": -88.767,
-      "colorOverride": { "primary": "#BA0C2F", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#BA0C2F",
+        "secondary": "#000000"
+      },
+      "coachOverride": {
+        "name": "Rob Harley",
+        "hireYear": 2026,
+        "salary": null,
+        "interim": true
+      }
     },
     {
       "id": "ohio",
@@ -2260,7 +2742,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 39.3267,
       "lng": -82.1074,
-      "colorOverride": { "primary": "#00694E", "secondary": "#CFC493" }
+      "colorOverride": {
+        "primary": "#00694E",
+        "secondary": "#CFC493"
+      }
     },
     {
       "id": "toledo",
@@ -2279,7 +2764,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1100000,
       "lat": 41.6607,
       "lng": -83.6127,
-      "colorOverride": { "primary": "#003477", "secondary": "#FFC72C" }
+      "colorOverride": {
+        "primary": "#003477",
+        "secondary": "#FFC72C"
+      }
     },
     {
       "id": "umass",
@@ -2298,7 +2786,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1360000,
       "lat": 42.3876,
       "lng": -72.5217,
-      "colorOverride": { "primary": "#881C1C", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#881C1C",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "western-michigan",
@@ -2317,7 +2808,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 42.2817,
       "lng": -85.6261,
-      "colorOverride": { "primary": "#6C4023", "secondary": "#C6973F" }
+      "colorOverride": {
+        "primary": "#6C4023",
+        "secondary": "#C6973F"
+      }
     },
     {
       "id": "delaware",
@@ -2336,7 +2830,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 600000,
       "lat": 39.682,
       "lng": -75.753,
-      "colorOverride": { "primary": "#00539F", "secondary": "#FFD200" }
+      "colorOverride": {
+        "primary": "#00539F",
+        "secondary": "#FFD200"
+      }
     },
     {
       "id": "fiu",
@@ -2355,7 +2852,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 900000,
       "lat": 25.758,
       "lng": -80.3731,
-      "colorOverride": { "primary": "#081E3F", "secondary": "#B6862C" }
+      "colorOverride": {
+        "primary": "#081E3F",
+        "secondary": "#B6862C"
+      }
     },
     {
       "id": "jacksonville-state",
@@ -2374,7 +2874,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 33.8152,
       "lng": -85.7588,
-      "colorOverride": { "primary": "#CC0000", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#CC0000",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "kennesaw-state",
@@ -2393,7 +2896,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 34.0336,
       "lng": -84.5774,
-      "colorOverride": { "primary": "#FDBB30", "secondary": "#000000" }
+      "colorOverride": {
+        "primary": "#FDBB30",
+        "secondary": "#000000"
+      }
     },
     {
       "id": "liberty",
@@ -2412,7 +2918,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 37.3552,
       "lng": -79.1789,
-      "colorOverride": { "primary": "#002D62", "secondary": "#C41230" }
+      "colorOverride": {
+        "primary": "#002D62",
+        "secondary": "#C41230"
+      }
     },
     {
       "id": "louisiana-tech",
@@ -2431,7 +2940,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 800000,
       "lat": 32.5278,
       "lng": -92.6434,
-      "colorOverride": { "primary": "#002F8B", "secondary": "#E31B23" }
+      "colorOverride": {
+        "primary": "#002F8B",
+        "secondary": "#E31B23"
+      }
     },
     {
       "id": "middle-tennessee",
@@ -2450,7 +2962,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1000000,
       "lat": 35.845,
       "lng": -86.3593,
-      "colorOverride": { "primary": "#0066CC", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#0066CC",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "missouri-state",
@@ -2469,7 +2984,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 700000,
       "lat": 37.1956,
       "lng": -93.2708,
-      "colorOverride": { "primary": "#6C0000", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#6C0000",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "new-mexico-state",
@@ -2488,7 +3006,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 800000,
       "lat": 32.2801,
       "lng": -106.7499,
-      "colorOverride": { "primary": "#891310", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#891310",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "sam-houston",
@@ -2507,7 +3028,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 800000,
       "lat": 30.7316,
       "lng": -95.5512,
-      "colorOverride": { "primary": "#F78F1E", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#F78F1E",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "utep",
@@ -2526,7 +3050,10 @@ const SCHOOLS_DATA = {
       "coachSalary": 1000000,
       "lat": 31.7718,
       "lng": -106.5042,
-      "colorOverride": { "primary": "#FF8200", "secondary": "#041E42" }
+      "colorOverride": {
+        "primary": "#FF8200",
+        "secondary": "#041E42"
+      }
     },
     {
       "id": "western-kentucky",
@@ -2538,14 +3065,17 @@ const SCHOOLS_DATA = {
       "primaryColor": "#C60C30",
       "secondaryColor": "#FFFFFF",
       "mascot": "Hilltoppers",
-      "stadium": "Houchens Industries–L. T. Smith Stadium",
+      "stadium": "Houchens Industries\u2013L. T. Smith Stadium",
       "stadiumCapacity": 22113,
       "founded": 1906,
       "enrollment": 20983,
       "coachSalary": 1200000,
       "lat": 36.9719,
       "lng": -86.477,
-      "colorOverride": { "primary": "#B01E24", "secondary": "#FFFFFF" }
+      "colorOverride": {
+        "primary": "#B01E24",
+        "secondary": "#FFFFFF"
+      }
     },
     {
       "id": "notre-dame",
@@ -2564,7 +3094,10 @@ const SCHOOLS_DATA = {
       "coachSalary": null,
       "lat": 41.6977,
       "lng": -86.2339,
-      "colorOverride": { "primary": "#C99700", "secondary": "#0C2340" }
+      "colorOverride": {
+        "primary": "#C99700",
+        "secondary": "#0C2340"
+      }
     },
     {
       "id": "uconn",
@@ -2583,7 +3116,15 @@ const SCHOOLS_DATA = {
       "coachSalary": 1500000,
       "lat": 41.7662,
       "lng": -72.6522,
-      "colorOverride": { "primary": "#000E2F", "secondary": "#E4002B" }
+      "colorOverride": {
+        "primary": "#000E2F",
+        "secondary": "#E4002B"
+      },
+      "coachOverride": {
+        "name": "Jason Candle",
+        "hireYear": 2026,
+        "salary": null
+      }
     }
   ]
 }

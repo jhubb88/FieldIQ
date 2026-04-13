@@ -559,7 +559,7 @@ function renderSituational(data) {
     <hr class="section-divider">
     <h3 class="school-section-title">Revenge Games</h3>
     <div class="stat-card" style="padding: 16px 20px;">
-      <div class="stat-card-title">Opponents who beat us in ${SCHOOL_YEAR - 1}</div>
+      <div class="stat-card-title">Opponents who beat us in ${SCHOOL_YEAR}</div>
       ${revengeContent}
     </div>`;
 
@@ -1643,26 +1643,64 @@ function _toggleDraftDrawer(year) {
 
 /* ----------------------------------------------------------
    renderCoachingContinuity
-   Builds the Coaching Continuity subsection. Two parts:
-     1. Current coach card — name, tenure, record, salary.
-     2. Full coaching history table — 1995 to present,
-        newest-first. Salary and conference championships are
-        not available from the API — salary comes from
-        schools.json; conf titles show \u2014.
+   Builds the Coaching Continuity subsection.
 
-   @param {Array}       coaches   — raw output of fetchAllCoaches()
-   @param {Object|null} schoolData — entry from SCHOOLS_DATA for
-                                    this school (may be null)
+   The very first operation is a direct lookup of the current
+   school's entry from SCHOOLS_DATA by SCHOOL_NAME. This is
+   independent of the schoolData parameter — it does not trust
+   that the caller resolved _schoolData correctly.
+
+   Override path: if coachOverride is present on the entry,
+     render Head Coach + Salary cards and return immediately.
+     CFBD data is never read, never used.
+
+   CFBD path: no coachOverride — build history from coaches
+     array and render current coach card + history table.
+
+   @param {Array|null}  coaches    — fetchAllCoaches() output,
+                                     or null for override schools
+   @param {Object|null} schoolData — fallback if direct lookup fails
    @returns {string} HTML string
    ---------------------------------------------------------- */
 function renderCoachingContinuity(coaches, schoolData) {
+  /* Direct lookup from SCHOOLS_DATA — source of truth for coachOverride.
+     Falls back to the passed-in schoolData if the name match fails. */
+  const entry = (SCHOOLS_DATA.teams || []).find(function (t) {
+    return t.name.replace(t.mascot || '', '').trim() === SCHOOL_NAME;
+  }) || schoolData || null;
+
+  /* ── Override check — first line of logic, always runs ─────────────── */
+  if (entry && entry.coachOverride) {
+    const ov     = entry.coachOverride;
+    const salary = ov.salary != null
+      ? '$' + Number(ov.salary).toLocaleString('en-US')
+      : 'N/A';
+    const sub = ov.interim
+      ? `Since ${ov.hireYear} \u00b7 Interim`
+      : `Since ${ov.hireYear}`;
+    return `
+      <div class="stat-cards-row">
+        <div class="stat-card">
+          <div class="stat-card-title">Head Coach</div>
+          <div class="stat-card-value">${ov.name}</div>
+          <div class="stat-card-sub">${sub}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Coach Salary</div>
+          <div class="stat-card-value">${salary}</div>
+          <div class="stat-card-sub">Annual (public records)</div>
+        </div>
+      </div>`;
+  }
+
+  /* ── CFBD path — only reached when no coachOverride exists ─────────── */
   if (!Array.isArray(coaches) || coaches.length === 0) {
     return errorHTML('Coaching history data unavailable.');
   }
 
   const HISTORY_START = 1995;
 
-  /* Build a flat list of { name, startYear, endYear, wins, losses } for this school */
+  /* Build a flat list of { name, startYear, endYear, wins, losses, bestRank } */
   const history = [];
   coaches.forEach(function (coach) {
     const schoolSeasons = (coach.seasons || [])
@@ -1689,12 +1727,10 @@ function renderCoachingContinuity(coaches, schoolData) {
   /* Sort newest-first */
   history.sort(function (a, b) { return b.endYear - a.endYear; });
 
-  /* Identify current coach — highest endYear */
   const current = history[0] || null;
 
-  /* Salary from schools.json — private schools show N/A.
-     Format raw numbers as $X,XXX,XXX; pass strings (e.g. 'N/A') through. */
-  const rawSalary = schoolData && schoolData.coachSalary ? schoolData.coachSalary : null;
+  /* Salary from SCHOOLS_DATA entry — private schools show N/A */
+  const rawSalary = entry && entry.coachSalary ? entry.coachSalary : null;
   let salary;
   if (!rawSalary) {
     salary = 'N/A';
@@ -1727,7 +1763,7 @@ function renderCoachingContinuity(coaches, schoolData) {
       </div>`;
   }
 
-  /* History table rows */
+  /* History table */
   const tableRows = history.map(function (h) {
     const yearRange = h.startYear === h.endYear ? `${h.startYear}` : `${h.startYear}\u2013${h.endYear}`;
     return `
@@ -1935,8 +1971,17 @@ async function _loadLongTermStrengthData() {
   /* --- 3. Coaching Continuity --- */
   (async function () {
     try {
-      const coaches = await fetchAllCoaches(SCHOOL_NAME);
-      setSection('longterm-coaching', renderCoachingContinuity(coaches, _schoolData));
+      /* Direct lookup — same name-match logic used inside the render function.
+         Does not depend on _schoolData being correctly resolved. */
+      const entry = (SCHOOLS_DATA.teams || []).find(function (t) {
+        return t.name.replace(t.mascot || '', '').trim() === SCHOOL_NAME;
+      });
+      if (entry && entry.coachOverride) {
+        setSection('longterm-coaching', renderCoachingContinuity(null, entry));
+      } else {
+        const coaches = await fetchAllCoaches(SCHOOL_NAME);
+        setSection('longterm-coaching', renderCoachingContinuity(coaches, entry || _schoolData));
+      }
     } catch (e) {
       setSection('longterm-coaching', errorHTML('Coaching data unavailable.'));
     }
