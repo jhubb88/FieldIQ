@@ -245,6 +245,11 @@ const SCHOOLS_DATA = {
       "colorOverride": {
         "primary": "#14213D",
         "secondary": "#CE1126"
+      },
+      "coachOverride": {
+        "name": "Pete Golding",
+        "hireYear": 2026,
+        "salary": 6800000
       }
     },
     {

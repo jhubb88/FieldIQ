@@ -949,6 +949,19 @@ function _deriveIdentity(teamInfo, coachInfo) {
     data.conference = teamInfo.conference;
   }
 
+  /* coachOverride — same name-match used in renderCoachingContinuity.
+     If present, it wins; CFBD coachInfo is never read for these schools. */
+  const overrideEntry = (SCHOOLS_DATA.teams || []).find(function (t) {
+    return t.name.replace(t.mascot || '', '').trim() === SCHOOL_NAME;
+  });
+  if (overrideEntry && overrideEntry.coachOverride) {
+    const ov = overrideEntry.coachOverride;
+    data.coachSalary = ov.salary != null ? '$' + Number(ov.salary).toLocaleString('en-US') : 'N/A';
+    data.coach       = ov.name;
+    data.coachSeason = ov.interim ? `Since ${ov.hireYear} \u00b7 Interim` : `Since ${ov.hireYear}`;
+    return data;
+  }
+
   if (coachInfo) {
     data.coach       = coachInfo.name;
     data.coachSeason = `${coachInfo.seasons} season${coachInfo.seasons !== 1 ? 's' : ''}`;
