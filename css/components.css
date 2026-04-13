@@ -1869,3 +1869,158 @@ body.is-home .page-content {
   text-transform: uppercase;
   color: var(--school-primary);
 }
+
+/* =============================================================
+   RESPONSIVE — Tablet (≤ 768px)
+   ============================================================= */
+@media (max-width: 768px) {
+
+  /* ----------------------------------------------------------
+     Touch targets — all interactive items min 44px height
+     ---------------------------------------------------------- */
+  .nav-item,
+  .lens-nav-item,
+  .campus-map-expand-btn,
+  .school-switcher-item,
+  .h2h-dropdown-item {
+    min-height: 44px;
+  }
+
+  /* ----------------------------------------------------------
+     Homepage grid — single column stack
+     ---------------------------------------------------------- */
+  .home-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 0 0 16px;
+  }
+
+  .home-card--top25,
+  .home-card--games,
+  .home-card--news,
+  .home-card--fact,
+  .home-card--cfp {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* ----------------------------------------------------------
+     School page layout — stack lens nav above content
+     ---------------------------------------------------------- */
+  .school-layout {
+    flex-direction: column;
+  }
+
+  /* Lens nav becomes a horizontal scrolling tab strip */
+  .school-sidebar {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-top: 0;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .school-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lens-nav-item {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 10px 14px;
+  }
+
+  .lens-nav-item:hover {
+    border-left-color: transparent;
+    border-bottom-color: color-mix(in srgb, var(--school-secondary) 50%, transparent);
+  }
+
+  .lens-nav-item.active {
+    border-left: none;
+    border-bottom-color: var(--school-primary);
+    background-color: transparent;
+  }
+
+  /* School main — remove left padding, add top gap */
+  .school-main {
+    padding-left: 0;
+    padding-top: 20px;
+  }
+
+  /* Snapshot row — 2×2 on tablet */
+  .snapshot-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Game cards — single column */
+  .game-cards-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* School hero — reduce padding */
+  .school-hero {
+    margin: -16px -16px 16px;
+    padding: 20px 16px;
+  }
+
+  /* H2H selector — stack teams vertically */
+  .h2h-selector {
+    flex-direction: column;
+  }
+
+  .h2h-vs {
+    padding-top: 0;
+    text-align: center;
+  }
+
+  /* Schedule right column — tighter on tablet */
+  .schedule-game-right {
+    min-width: 100px;
+  }
+}
+
+/* =============================================================
+   RESPONSIVE — Phone (≤ 480px)
+   ============================================================= */
+@media (max-width: 480px) {
+
+  /* Snapshot row — single column on phone */
+  .snapshot-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Draft production grid — 2 columns on phone (cards are small) */
+  .draft-production-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+
+  /* School hero name — smaller font */
+  .school-header-name {
+    font-size: 1.7rem;
+  }
+
+  /* Schedule game row — wrap right column on very narrow screens */
+  .schedule-game-row {
+    flex-wrap: wrap;
+  }
+
+  .schedule-game-right {
+    min-width: 0;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 4px;
+  }
+
+  /* Home hero wordmark — scale down */
+  .home-hero-wordmark {
+    font-size: 3.5rem;
+  }
+}

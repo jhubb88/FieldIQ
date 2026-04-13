@@ -88,3 +88,114 @@
   background-color: var(--bg-base);
   animation: fadeIn 0.25s ease;
 }
+
+/* ----------------------------------------------------------
+   Hamburger Button
+   Three-bar icon injected by app.js. Hidden on desktop,
+   visible on mobile. Toggles .sidebar-open on .app-shell.
+   ---------------------------------------------------------- */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--text-primary);
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+/* ----------------------------------------------------------
+   Sidebar Overlay
+   Full-viewport dark veil behind the open sidebar on mobile.
+   Injected by app.js. Invisible and non-interactive on desktop.
+   ---------------------------------------------------------- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* =============================================================
+   RESPONSIVE — Tablet (≤ 768px)
+   Sidebar collapses off-screen. Hamburger appears. Main content
+   fills the full viewport width.
+   ============================================================= */
+@media (max-width: 768px) {
+
+  /* Show hamburger */
+  .hamburger {
+    display: flex;
+  }
+
+  /* Sidebar slides in from the left as a fixed overlay */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .app-shell.sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Show and activate overlay when sidebar is open */
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .app-shell.sidebar-open .sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Main content fills full width (sidebar is out of flex flow) */
+  .main-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Reduce page padding on tablet */
+  .page-content {
+    padding: 16px;
+  }
+}
+
+/* =============================================================
+   RESPONSIVE — Phone (≤ 480px)
+   ============================================================= */
+@media (max-width: 480px) {
+
+  /* Topbar title hidden — school name shown in hero on school page */
+  .topbar-title {
+    display: none;
+  }
+
+  /* Tighter page padding on small phones */
+  .page-content {
+    padding: 12px;
+  }
+}

@@ -97,6 +97,40 @@ function buildTopbar() {
   /* Guard: only inject once */
   if (!topbar || document.getElementById('school-switcher')) return;
 
+  /* --- Hamburger button (visible only on mobile via CSS) ---
+     Toggles .sidebar-open on .app-shell. Three <span> bars
+     are styled purely via CSS — no icon font required.       */
+  const appShell  = document.querySelector('.app-shell');
+  const hamburger = document.createElement('button');
+  hamburger.id        = 'hamburger';
+  hamburger.className = 'hamburger';
+  hamburger.setAttribute('aria-label', 'Toggle navigation');
+  hamburger.innerHTML = '<span></span><span></span><span></span>';
+  topbar.prepend(hamburger);
+
+  /* --- Sidebar overlay (mobile only — blocks content behind open sidebar) --- */
+  const overlay = document.createElement('div');
+  overlay.className = 'sidebar-overlay';
+  overlay.id        = 'sidebar-overlay';
+  if (appShell) appShell.appendChild(overlay);
+
+  /* Open / close handlers */
+  hamburger.addEventListener('click', function () {
+    if (appShell) appShell.classList.toggle('sidebar-open');
+  });
+
+  overlay.addEventListener('click', function () {
+    if (appShell) appShell.classList.remove('sidebar-open');
+  });
+
+  /* Tapping a nav item on mobile closes the sidebar automatically */
+  const sidebarNav = document.getElementById('sidebar-nav');
+  if (sidebarNav) {
+    sidebarNav.addEventListener('click', function () {
+      if (appShell) appShell.classList.remove('sidebar-open');
+    });
+  }
+
   /* Build and inject the switcher HTML */
   const switcherEl       = document.createElement('div');
   switcherEl.className   = 'school-switcher';
