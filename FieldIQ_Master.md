@@ -159,13 +159,22 @@ FieldIQ/                          ← Lives on Windows Desktop
 - Current week games → cache 1 hour
 - News → cache 30 minutes
 
-## GitHub
+## GitHub & Deployment
 
-- Repo: `FieldIQ` (public-safe — config.js is gitignored)
+- Repo: `github.com/jhubb88/FieldIQ` (public-safe — config.js is gitignored)
 - Old API key was exposed in commit history — scrubbed with git filter-repo
 - New key is in config.js only, never touches GitHub
 - Commit at end of each phase: `"Phase X: [name] complete"`
 - Open locally: `file:///C:/Users/jimmy/Desktop/FieldIQ/index.html`
+
+**Production Deployment (AWS S3 + CloudFront):**
+- S3 Bucket: `jimmy-fieldiq` (us-east-1)
+- CloudFront Distribution: `E12Z80TRB0P2XR`
+- Live URL: `https://d1q3x6tsvbllgg.cloudfront.net`
+- Deploy command: `aws s3 sync /mnt/c/Users/jimmy/Desktop/FieldIQ s3://jimmy-fieldiq --profile portfolio-user --exclude "config.js" --exclude ".git/*" --exclude ".playwright-mcp/*" --exclude "*.pdf" --exclude "*.csv" --exclude "FieldIQ_Master.md" --exclude "NOTES.md"`
+- Cache invalidation: `aws cloudfront create-invalidation --distribution-id E12Z80TRB0P2XR --paths "/*" --profile portfolio-user`
+- config.js must be uploaded manually to S3 after every sync — it is gitignored and excluded from sync
+- Featured on Advanced Projects portfolio page with Live Demo button
 
 ---
 
