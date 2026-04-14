@@ -74,6 +74,19 @@
 }
 
 /* ----------------------------------------------------------
+   Season Notice
+   Single-line data-currency banner between topbar and content.
+   ---------------------------------------------------------- */
+.season-notice {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 5px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ----------------------------------------------------------
    Page Content
    The scrollable region below the topbar. All page views
    (home, school, etc.) are rendered inside this container.
