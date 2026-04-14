@@ -22,6 +22,12 @@ const CFBD_BASE_URL = 'https://api.collegefootballdata.com';
 // Copy config.js from the repo root, add your real key, and never commit it.
 const CFBD_API_KEY = CFBD_CONFIG.apiKey;
 
+// Declared here (before all functions) to avoid temporal dead zone errors.
+// Functions that call _cacheGet/_cacheSet are declared below — they must not
+// be invoked before these two consts are initialized.
+const _apiCache = {};
+const _24H = 24 * 3600 * 1000;
+
 /* ----------------------------------------------------------
    cfbdFetch
    Wraps the native fetch API for CFBD requests.
@@ -156,10 +162,8 @@ async function fetchESPNNews() {
    undefined = cache miss. null = valid cached value (e.g.
    unranked team). Resets on page reload — sufficient for a
    single session given the 1000 req/month CFBD budget.
+   (_apiCache and _24H declared at top of file, before all functions.)
    ---------------------------------------------------------- */
-const _apiCache = {};
-const _24H = 24 * 3600 * 1000;
-
 function _cacheSet(key, data, ttlMs) {
   _apiCache[key] = {
     data,
