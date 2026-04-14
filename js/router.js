@@ -17,6 +17,7 @@
 const ROUTES = {
   home:   () => HomePage.render(),
   school: (params) => SchoolPage.render(params),
+  league: () => LeaguePage.render(),
 };
 
 /* ----------------------------------------------------------
@@ -63,9 +64,8 @@ function renderCurrentRoute() {
   }
 
   // Unmount previous page if it has cleanup to do (e.g. mosaic teardown)
-  if (page !== 'home' && typeof HomePage.unmount === 'function') {
-    HomePage.unmount();
-  }
+  if (page !== 'home'   && typeof HomePage.unmount   === 'function') HomePage.unmount();
+  if (page !== 'league' && typeof LeaguePage.unmount === 'function') LeaguePage.unmount();
 
   // Toggle body class so CSS can adapt per route (e.g. transparent bg on home)
   document.body.classList.toggle('is-home', page === 'home');

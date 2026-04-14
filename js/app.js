@@ -15,6 +15,7 @@
 const NAV_ITEMS = [
   { label: 'Home',    route: 'home'   },
   { label: 'Schools', route: 'school' },
+  { label: 'League',  route: 'league' },
 ];
 
 /* ----------------------------------------------------------

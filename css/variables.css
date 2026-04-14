@@ -41,6 +41,8 @@
   --color-loss-text:#f87171;  /* Loss badge text — bright red */
   --color-win-bg:   rgba(30, 107, 63, 0.20);   /* Win badge background */
   --color-loss-bg:  rgba(155, 35, 53, 0.20);   /* Loss badge background */
+  --color-positive: #4ade80;  /* Positive delta — risers, covers (matches win-text) */
+  --color-negative: #f87171;  /* Negative delta — fallers, losses (matches loss-text) */
 
   /* ----------------------------------------------------------
      Font Families

@@ -344,9 +344,29 @@ body.is-home .page-content {
   grid-row: 1 / 3;
 }
 
-.home-card--fact {
+/* .home-card--fact has no grid placement — it lives inside .home-card-col--facts */
+
+/* ----------------------------------------------------------
+   Home Card Column
+   Flex column wrapper for stacked cards that share one grid
+   cell. Children get flex:1 so they divide the row height
+   equally. Used by the History + Fast Facts pair.
+   ---------------------------------------------------------- */
+.home-card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.home-card-col--facts {
   grid-column: 2;
   grid-row: 2;
+  align-self: stretch;
+}
+
+.home-card-col--facts .home-card {
+  flex: 1;
+  min-height: 130px;
 }
 
 .home-card--cfp {
@@ -1898,7 +1918,7 @@ body.is-home .page-content {
   .home-card--top25,
   .home-card--games,
   .home-card--news,
-  .home-card--fact,
+  .home-card-col--facts,
   .home-card--cfp {
     grid-column: 1;
     grid-row: auto;
