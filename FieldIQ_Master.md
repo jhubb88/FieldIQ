@@ -1,6 +1,6 @@
 # FieldIQ — Master Reference Document
 *Upload this ONE file to the FieldIQ Projects page. Replace it only when major decisions change.*
-*Last updated: Phase 13 complete. Phases 1–13 complete.*
+*Last updated: Phase 15 complete. Phases 1–15 complete.*
 
 ---
 
@@ -98,7 +98,8 @@ FieldIQ/                          ← Lives on Windows Desktop
 │   └── logos/                    ← School logos (Phase 11)
 └── pages/
     ├── home.js                   ← Homepage render + data fetching
-    └── school.js                 ← School page render + data fetching. SCHEDULE_YEAR = 2026 constant separate from CURRENT_YEAR = 2024.
+    ├── league.js                 ← League page — Conference Standings, Best ATS, Movers, Top Performers. Added Phase 15.
+    └── school.js                 ← School page render + data fetching. SCHEDULE_YEAR = 2026 constant separate from CURRENT_YEAR = 2025.
 ```
 
 ## Design System
@@ -309,7 +310,42 @@ Contradictory pairs that can never coexist:
 | 11 | Dynamic Theming + School Switcher | ✅ Complete |
 | 12 | Draft Production + Long-Term Strength | ✅ Complete |
 | 13 | Polish + Performance | ✅ Complete |
-| 14 | Data Refresh + Color Override Fix | ⏭️ Next |
+| 14 | Data Refresh + Color Override Fix | ✅ Complete |
+| 15 | Homepage Fixes + League Tab | ✅ Complete |
+| 16 | TBD | ⏭️ Next |
+
+### Phase 15 — What Was Built (commit d669261)
+
+- Week null bug fixed — history section now uses live ISO calendar week, never shows "Week null" (`pages/home.js`)
+- Fast Facts card added — 100-item static array, random fact on each page load, stacked below history box (`pages/home.js`)
+- History box and Fast Facts box sized equally with gap between them (`css/components.css`)
+- League page built — Conference Standings, Best ATS Conferences, Movers of the Week, Top Performers (`pages/league.js`)
+- Conference Standings and Best ATS both computed client-side from CFBD 2025 data, cached 24hrs
+- Movers of the Week + Top Performers show offseason graceful fallback when CURRENT_WEEK = null
+- #league route added to router (`js/router.js`)
+- League nav item added to sidebar (`js/app.js`)
+- league.js script tag added (`index.html`)
+- Stacked column layout for history/facts column (`css/components.css`)
+- --color-positive / --color-negative tokens added (`css/variables.css`)
+
+### Phase 14 — What Was Built (commits 86a3a7a + c2b68d2 + f298d48)
+
+**14a (86a3a7a):**
+- colorOverride synced for 134 schools + 5 new — 135/136 now covered (`data/schools.js`)
+- colorOverride added for 5 previously missing schools — 136/136 (`data/schools.json`)
+- `SCHOOL_YEAR` 2024 → 2025; 2015–2024 UI string fixed; stale comments cleaned (`pages/school.js`)
+- `CURRENT_WEEK = null` offseason sentinel; Top Games title + empty state updated; fetchGames guarded (`pages/home.js`)
+- `completed2024`/`completed2023` → `completedCurrent`/`completedPrior` (`js/situational.js`)
+
+**14b (c2b68d2):**
+- Revenge game label fixed — `${SCHOOL_YEAR - 1}` → `${SCHOOL_YEAR}`, now correctly reads "Opponents who beat us in 2025" (`pages/school.js`)
+- Full sweep — no stale hardcoded 2024 analytics-year refs in any of the four files
+- `renderCoachingContinuity` — `coachOverride` check added; override card shows name + hire year + salary (N/A if null); "Interim" suffix for NIU (`pages/school.js`)
+- 27 schools patched with `coachOverride`, 27/27 verified, JSON valid (`data/schools.json` + `data/schools.js`)
+
+**14b patch (f298d48):**
+- `_deriveIdentity` coachOverride check added — fixes Overview card for all 28 override schools (`pages/school.js`)
+- Ole Miss entry corrected to Pete Golding, 2026, $6.8M (`data/schools.js` + `data/schools.json`)
 
 ### Phase 13 — What Was Built (commits 00d3650 + b11d9ca)
 
@@ -338,10 +374,11 @@ Contradictory pairs that can never coexist:
 
 | Issue | Flag |
 |---|---|
-| colorOverride silently not applying (CRITICAL) | schools.json entries have no `colorOverride` fields at all — the entire color audit from Phase 11 is silently broken for every school except Oregon State and Washington State (added in 13a). Fix in Phase 14a: add `colorOverride: { primary, secondary }` to all affected schools.json entries. applyThemeFromTeam() already checks override first, but the data isn't there to find. |
-| Coaching data stale — 2025 carousel | CFBD has not updated coaching data for schools affected by the massive 2025 coaching carousel. Fix in Phase 14 via `coachOverride` field in schools.json. Coaching CSV attached to Projects page. Affected: LSU (Lane Kiffin), Penn State (Matt Campbell), Virginia Tech (James Franklin), Florida (Jon Sumrall), Auburn (Alex Golesh), UCLA (Bob Chesney), Michigan (Kyle Whittingham), Ole Miss (Pete Golding), Arkansas (Ryan Silverfield), Kentucky (Will Stein). |
-| Season data stale — analytics on 2024 | All analytics (Program DNA, Game Control, Volatility, Situational, Market) run on CURRENT_YEAR = 2024. The 2025 season is fully complete (CFP National Championship played Jan 19, 2026 — Indiana def. Miami). Roll over to 2025 in Phase 14. |
-| Homepage constants need offseason update | CURRENT_WEEK and related homepage constants need updating for offseason/2025 state in Phase 14. |
+| colorOverride silently not applying | ✅ Fixed in Phase 14a — 136/136 schools now have colorOverride data. applyThemeFromTeam() override path fully operational. |
+| Coaching data stale — 2025 carousel | ✅ Fixed in Phase 14b — 28 schools patched with coachOverride in schools.json. _deriveIdentity and renderCoachingContinuity both check override before CFBD. |
+| Season data stale — analytics on 2024 | ✅ Fixed in Phase 14a — CURRENT_YEAR rolled to 2025. All analytics, banners, and labels now reflect 2025 season. |
+| Homepage constants offseason update | ✅ Fixed in Phase 14a — CURRENT_WEEK = null offseason sentinel. Top Games section handles null gracefully. |
+| Top Games offseason dead space | Top Games section shows a large empty card during offseason when CURRENT_WEEK = null. Should collapse entirely rather than showing an empty shell. Flag for future polish pass. |
 | Conf. Championships data gap | CFBD /coaches endpoint does not return reliable conference championship data. Column dropped from coaching history table. Best AP Rank used instead. Deferred indefinitely. |
 | Record vs Ranked skipping | CFBD doesn't reliably embed rank in team-filtered game queries. Needs separate /rankings fetch cross-referenced by week. Deferred — not worth API budget now. |
 | JSDoc `@.cache/node-gyp` paths | Recurring CC issue — always clean before writing any file to disk. |
@@ -388,4 +425,11 @@ Contradictory pairs that can never coexist:
 | Homepage layout Phase 13 | History fact box shrunk. Conference Standings + Best ATS Conferences added as two side-by-side cards (no toggle — both visible simultaneously). |
 | colorOverride bug | schools.json entries are missing the colorOverride field — color audit data exists in theme.js logic but has no data to read. Fix is Phase 14a priority. |
 | Cache key collision rule | All cache keys must include school name or team identifier. Generic keys (e.g. "games_2024") will collide across schools. |
-| 2025 season complete | CFP National Championship played January 19, 2026. Indiana defeated Miami. Full 2025 CFBD dataset available. Season rollover to CURRENT_YEAR = 2025 is Phase 14. |
+| 2025 season complete | CFP National Championship played January 19, 2026. Indiana defeated Miami. Full 2025 CFBD dataset available. Season rollover to CURRENT_YEAR = 2025 complete in Phase 14. |
+| coachOverride pattern | 28 schools have coachOverride in schools.json. Both _deriveIdentity (Overview card) and renderCoachingContinuity (Long-Term Strength) check override before CFBD. Override wins unconditionally. Non-override schools fall through to CFBD unchanged. |
+| Revenge game label | Uses CURRENT_YEAR directly (not SCHOOL_YEAR - 1). Reads "Opponents who beat us in 2025" — correct for showing prior-season losses as 2026 revenge candidates. |
+| League tab | Third sidebar nav item. Routes to #league. resetTheme() always applies — no school colors. league.js handles all four sections. |
+| Fast Facts | 100-item static JS array in home.js. Random pick on each page load. No API call, zero dependency on season state. Always populated. |
+| History box layout | History fact and Fast Facts card stacked in same column, equal height, small gap between. No grid restructuring — wrapped in a column div. |
+| Conference Standings method | Cross-conference records only — computed from CFBD /games?year=2025&seasonType=regular filtered for inter-conference matchups. Ranked by win %. |
+| CURRENT_YEAR = 2025 | Rolled from 2024 in Phase 14. All analytics, banners, DNA labels reflect 2025 season. |
