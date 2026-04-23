@@ -1,6 +1,6 @@
 # FieldIQ — Master Reference Document
 *Upload this ONE file to the FieldIQ Projects page. Replace it only when major decisions change.*
-*Last updated: Phase 15 complete. Phases 1–15 complete.*
+*Last updated: Phase 15 complete. Phase 16 (Caching Persistence) scoped and pending. Root cause of intermittent Long-Term Strength / Schedule bugs identified — in-memory-only caching in api.js.*
 
 ---
 
@@ -342,7 +342,7 @@ Contradictory pairs that can never coexist:
 | 13 | Polish + Performance | ✅ Complete |
 | 14 | Data Refresh + Color Override Fix | ✅ Complete |
 | 15 | Homepage Fixes + League Tab | ✅ Complete |
-| 16 | TBD | ⏭️ Next |
+| 16 | Caching Persistence (localStorage) | ⏭️ Next |
 
 ### Phase 15 — What Was Built (commit d669261)
 
@@ -357,6 +357,30 @@ Contradictory pairs that can never coexist:
 - league.js script tag added (`index.html`)
 - Stacked column layout for history/facts column (`css/components.css`)
 - --color-positive / --color-negative tokens added (`css/variables.css`)
+
+### Phase 16 — Scope (not yet built)
+
+**Root cause:** All analytics caching (`_apiCache` in api.js) is in-memory only — resets on every page reload. Only `teamInfo_*` and `h2h_*` persist to localStorage. Every reload re-fires 15+ concurrent CFBD fetches per school page, blowing through the 1000/month budget and causing intermittent section failures (empty Long-Term Strength, wrong records like Oregon/Indiana 24-1, missing schedules on non-default schools). The explicit comment in api.js lines 162-166 ("Resets on page reload — sufficient for a single session") was a wrong assumption from Phase 3.
+
+**Fix scope — api.js only:**
+- Upgrade `_cacheGet` / `_cacheSet` to dual-layer (localStorage + in-memory). localStorage becomes source of truth; memory is a session-level read-through.
+- Add `fiq:v1:` prefix to all localStorage keys for schema versioning. Future cache-shape changes bump to `v2:` and old entries are ignored automatically.
+- **Empty-response guard (non-negotiable):** never cache `[]`, `null`, or `undefined` for fetches that should return data. Prevents persisting bad data forever — this is what caused Oregon/Indiana 24-1. Legitimate `null` cases (e.g. unranked team from `fetchFinalRank`) must still cache — distinguish "fetch failed, got nothing" from "fetch succeeded, answer is null."
+- Add `window.clearFieldIQCache()` dev utility — callable from browser console to wipe all `fiq:v1:*` keys. Needed for testing.
+- TTL pruning on read: `_cacheGet` must check `expires` timestamp and delete expired LS entries on hit.
+- Reuse existing try/catch swallow-on-quota pattern already used by `fetchTeamInfo` and h2h.
+
+**Out of scope — DO NOT TOUCH:**
+- school.js, home.js, league.js — all existing cache keys already include `${school}` where needed and inherit for free.
+- gamecontrol.js, situational.js, market.js — pure compute, no fetch/storage.
+- Any named fetch function signature or cache key format.
+
+**Test plan:**
+- Reload Ohio State school page 3 times, open DevTools Network tab filtered to `collegefootballdata`.
+- Reload 1: ~15 requests fire, Long-Term Strength populates.
+- Reloads 2 and 3: zero new CFBD requests, Long-Term Strength populates instantly from localStorage.
+- Open DevTools Application → Local Storage, verify `fiq:v1:*` keys present with valid `{data, expires}` shape.
+- Run `window.clearFieldIQCache()` in console, reload, verify fresh fetches fire again.
 
 ### Phase 14 — What Was Built (commits 86a3a7a + c2b68d2 + f298d48)
 
@@ -404,6 +428,7 @@ Contradictory pairs that can never coexist:
 
 | Issue | Flag |
 |---|---|
+| Caching in-memory only | All analytics caching resets on reload. Only `teamInfo_*` and `h2h_*` persist. Causes 15+ redundant CFBD fetches per reload and intermittent empty/wrong sections when fetches fail transiently. **Fix scoped as Phase 16 — ⏭️ Next.** |
 | colorOverride silently not applying | ✅ Fixed in Phase 14a — 136/136 schools now have colorOverride data. applyThemeFromTeam() override path fully operational. |
 | Coaching data stale — 2025 carousel | ✅ Fixed in Phase 14b — 28 schools patched with coachOverride in schools.json. _deriveIdentity and renderCoachingContinuity both check override before CFBD. |
 | Season data stale — analytics on 2024 | ✅ Fixed in Phase 14a — CURRENT_YEAR rolled to 2025. All analytics, banners, and labels now reflect 2025 season. |
