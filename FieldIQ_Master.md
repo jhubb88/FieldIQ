@@ -17,6 +17,7 @@ Jimmy is not a developer by trade but is highly capable and building real, produ
 - **No design docs, no approval steps, no transition plans** — just plan, confirm, build.
 - **Terminal output must stay clean** — if any skill or mode is changing the output format, turn it off immediately.
 - **All CC prompts are self-contained** — no dependency on project files CC can't see. All context, rules, current status, known issues, and build plan are baked into the prompt itself.
+- **Never remove existing buttons when adding new ones** — only append. Recurring issue on the advanced projects portfolio page.
 
 ## How We Build
 
@@ -171,10 +172,30 @@ FieldIQ/                          ← Lives on Windows Desktop
 - S3 Bucket: `jimmy-fieldiq` (us-east-1)
 - CloudFront Distribution: `E12Z80TRB0P2XR`
 - Live URL: `https://d1q3x6tsvbllgg.cloudfront.net`
-- Deploy command: `aws s3 sync /mnt/c/Users/jimmy/Desktop/FieldIQ s3://jimmy-fieldiq --profile portfolio-user --exclude "config.js" --exclude ".git/*" --exclude ".playwright-mcp/*" --exclude "*.pdf" --exclude "*.csv" --exclude "FieldIQ_Master.md" --exclude "NOTES.md"`
+- Deploy command: `aws s3 sync . s3://jimmy-fieldiq --profile portfolio-user --exclude "config.js" --exclude ".git/*"`
 - Cache invalidation: `aws cloudfront create-invalidation --distribution-id E12Z80TRB0P2XR --paths "/*" --profile portfolio-user`
 - config.js must be uploaded manually to S3 after every sync — it is gitignored and excluded from sync
 - Featured on Advanced Projects portfolio page with Live Demo button
+
+## Portfolio Page — Advanced Projects
+
+- **File:** `C:\Users\jimmy\Desktop\Projects\advanced-projects`
+- **S3 bucket:** `jimmy-advanced-projects`
+- **Live URL:** `https://d2uisqfxjzeo6a.cloudfront.net`
+- **Deploy command:** `aws s3 sync /mnt/c/Users/jimmy/Desktop/Projects/advanced-projects/ s3://jimmy-advanced-projects --exclude ".git/*" --profile portfolio-user`
+- **Cache invalidation:** find CloudFront distribution ID in folder or `.git` config before deploying
+
+**FieldIQ card buttons:** Coming Soon · Live Demo (`https://d1q3x6tsvbllgg.cloudfront.net`) · Architecture (modal)
+
+**Architecture modal content:**
+- What it is: college football analytics dashboard, data-driven stats and performance breakdowns
+- Tech stack: vanilla HTML, CSS, JavaScript — no frameworks
+- Data layer: CFBD API, client-side fetch, aggressive caching (past results forever / rankings 24hrs / current week 1hr), 1,000 req/month free tier, per-section error handling
+- Key decisions: client-side only, no backend, API-driven rendering, `_deriveIdentity()` concatenates firstName/lastName from CFBD `/coaches`
+- Structure: nine analytical lenses built across fifteen phases
+- What I learned: third-party sports APIs, client-side data transformation, modular vanilla JS without a framework
+
+**Recurring issue:** CC removes existing buttons when adding new ones. Every portfolio page prompt must include: *"Never remove existing buttons — only append."*
 
 ---
 
@@ -442,3 +463,4 @@ Contradictory pairs that can never coexist:
 | History box layout | History fact and Fast Facts card stacked in same column, equal height, small gap between. No grid restructuring — wrapped in a column div. |
 | Conference Standings method | Cross-conference records only — computed from CFBD /games?year=2025&seasonType=regular filtered for inter-conference matchups. Ranked by win %. |
 | CURRENT_YEAR = 2025 | Rolled from 2024 in Phase 14. All analytics, banners, DNA labels reflect 2025 season. |
+| Portfolio Architecture modal | Added to FieldIQ card on advanced projects page. Nine lenses, fifteen phases, accurate caching strategy. Live Demo button preserved alongside Architecture button. |
