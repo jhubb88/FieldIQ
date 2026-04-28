@@ -158,26 +158,112 @@ async function fetchESPNNews() {
    ============================================================= */
 
 /* ----------------------------------------------------------
-   In-memory cache
-   undefined = cache miss. null = valid cached value (e.g.
-   unranked team). Resets on page reload — sufficient for a
-   single session given the 1000 req/month CFBD budget.
+   Cache helpers — dual-layer (in-memory + localStorage)
+
+   localStorage is the source of truth across page reloads;
+   _apiCache is a session-level read-through for speed. All
+   localStorage entries are written under the prefix `fiq:v1:`
+   so the cache shape can be versioned by bumping to `v2:`
+   (older entries are then ignored automatically).
+
+   Empty arrays, empty plain objects, and `undefined` are NOT
+   cached — they signal a fetch returned nothing useful and
+   would otherwise persist bad data forever (the exact bug
+   that produced 24-1 records on Oregon and Indiana). `null`
+   IS cached — a team finishing unranked is a legitimate
+   answer from fetchFinalRank.
+
+   `expires: null` means "cache forever" (immutable historical
+   data). Stale entries are pruned lazily on read.
    (_apiCache and _24H declared at top of file, before all functions.)
    ---------------------------------------------------------- */
+const _LS_PREFIX = 'fiq:v1:';
+
+// Empty-response predicate — single source of truth for the invariant
+// "never cache a fetch that returned nothing useful." Used on both write
+// (refuse to persist) and read (prune on access) so the rule holds across
+// both layers and across pre-Phase-16 / external writes.
+// null is NOT empty here — it's a legitimate cached answer (e.g. unranked).
+function _isEmptyResponse(data) {
+  if (data === undefined) return true;
+  if (Array.isArray(data) && data.length === 0) return true;
+  if (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length === 0) return true;
+  return false;
+}
+
 function _cacheSet(key, data, ttlMs) {
-  _apiCache[key] = {
-    data,
-    expires: ttlMs != null ? Date.now() + ttlMs : null,
-  };
+  // Empty-response guard — never persist a fetch that returned nothing useful.
+  // null falls through and is cached — legitimate "unranked" answer.
+  if (_isEmptyResponse(data)) return;
+
+  const expires = ttlMs != null ? Date.now() + ttlMs : null;
+
+  // Layer 1: in-memory (session)
+  _apiCache[key] = { data, expires };
+
+  // Layer 2: localStorage (cross-reload)
+  try {
+    localStorage.setItem(_LS_PREFIX + key, JSON.stringify({ data, expires }));
+  } catch (e) { /* quota exceeded — silently drop LS write */ }
 }
 
 function _cacheGet(key) {
-  const entry = _apiCache[key];
-  if (!entry) return undefined;
-  if (entry.expires !== null && Date.now() > entry.expires) {
-    delete _apiCache[key];
+  // Layer 1: in-memory
+  const memEntry = _apiCache[key];
+  if (memEntry) {
+    const expired = memEntry.expires !== null && Date.now() > memEntry.expires;
+    // Symmetric empty-response guard — _cacheSet won't write these in normal
+    // Phase 16 flow, but DevTools mutations or future bypasses could poison
+    // _apiCache. Prune on read so the invariant holds across both layers.
+    if (expired || _isEmptyResponse(memEntry.data)) {
+      delete _apiCache[key];
+      // fall through to LS — it may still hold a valid entry
+    } else {
+      return memEntry.data; // may be null — valid cached value
+    }
+  }
+
+  // Layer 2: localStorage
+  let raw;
+  try { raw = localStorage.getItem(_LS_PREFIX + key); } catch (e) { return undefined; }
+  if (!raw) return undefined;
+
+  let entry;
+  try { entry = JSON.parse(raw); }
+  catch (e) {
+    try { localStorage.removeItem(_LS_PREFIX + key); } catch (_) {}
     return undefined;
   }
+
+  // Shape guard — entries from older builds, manual edits, or partial writes
+  // can lack the { data, expires } shape. A missing `expires` would otherwise
+  // bypass the expiry check (Date.now() > undefined is false) and persist
+  // bad data forever. Reject and remove.
+  const validShape =
+    entry !== null &&
+    typeof entry === 'object' &&
+    Object.prototype.hasOwnProperty.call(entry, 'data') &&
+    Object.prototype.hasOwnProperty.call(entry, 'expires') &&
+    (entry.expires === null || typeof entry.expires === 'number');
+  if (!validShape) {
+    try { localStorage.removeItem(_LS_PREFIX + key); } catch (_) {}
+    return undefined;
+  }
+
+  // Symmetric empty-response guard (LS branch).
+  if (_isEmptyResponse(entry.data)) {
+    try { localStorage.removeItem(_LS_PREFIX + key); } catch (_) {}
+    return undefined;
+  }
+
+  // Expiry check.
+  if (entry.expires !== null && Date.now() > entry.expires) {
+    try { localStorage.removeItem(_LS_PREFIX + key); } catch (_) {}
+    return undefined;
+  }
+
+  // Hydrate to in-memory so subsequent reads in this session skip LS
+  _apiCache[key] = entry;
   return entry.data; // may be null — valid cached value
 }
 
@@ -209,7 +295,7 @@ async function fetchTeamInfo(school) {
   let teams = _cacheGet(key);
   if (teams === undefined) {
     teams = await cfbdFetch('/teams', { division: 'fbs' });
-    _cacheSet(key, teams, null); // cache indefinitely for this session
+    _cacheSet(key, teams, null); // cached forever via fiq:v1:teamInfo:fbs (Phase 16 dual-layer)
   }
 
   const teamObj = teams.find(t => t.school === school) || null;
@@ -475,3 +561,33 @@ async function fetchScheduleLines(school, year) {
   _cacheSet(key, data, _24H); // 24h — lines update as season approaches
   return data;
 }
+
+/* =============================================================
+   Phase 16 — Dev utility
+   ============================================================= */
+
+/* ----------------------------------------------------------
+   window.clearFieldIQCache
+   Wipes both cache layers so fresh CFBD fetches fire on the
+   next reload. Open DevTools and run:
+     window.clearFieldIQCache()
+   Logs the number of localStorage entries removed.
+
+   Note: the legacy 'teamInfo_${school}' keys written by
+   fetchTeamInfo are NOT cleared here — they use a different
+   prefix and are intentionally left alone.
+   ---------------------------------------------------------- */
+window.clearFieldIQCache = function() {
+  let cleared = 0;
+  // Iterate backwards because removeItem shifts subsequent indexes
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(_LS_PREFIX)) {
+      localStorage.removeItem(k);
+      cleared++;
+    }
+  }
+  // Reset in-memory cache (_apiCache is const — delete keys, don't reassign)
+  for (const k of Object.keys(_apiCache)) delete _apiCache[k];
+  console.log(`FieldIQ: cleared ${cleared} localStorage entries (prefix ${_LS_PREFIX}) and reset in-memory cache.`);
+};
