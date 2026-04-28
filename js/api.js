@@ -336,7 +336,7 @@ async function fetchSeasonRecord(school, year) {
    fetchFinalRank
    Returns the final AP Top 25 ranking for a school using
    postseason poll data. Returns null if the school is unranked.
-   Cached 24 hours.
+   Cached indefinitely — postseason ranks are immutable.
 
    Named fetchFinalRank to avoid conflict with the existing
    fetchRankings(year, seasonType) used by the homepage.
@@ -363,7 +363,7 @@ async function fetchFinalRank(school, year) {
     }
   }
 
-  _cacheSet(key, rank, _24H);
+  _cacheSet(key, rank, null); // postseason ranks are immutable once set
   return rank;
 }
 
