@@ -1486,7 +1486,7 @@ function _extractAPRankings(weeklyData, school) {
    ---------------------------------------------------------- */
 function renderRankingsHistory(seasons) {
   const rows = seasons.map(function (s) {
-    /* State 1 \u2014 regular-rankings fetch failed, can't compute anything. */
+    /* State 1 — regular-rankings fetch failed, can't compute anything. */
     if (s.regularFailed) {
       return `
         <div class="rankings-row">
@@ -1499,7 +1499,7 @@ function renderRankingsHistory(seasons) {
 
     const { peakRank, weeksRanked, lastRank } = _extractAPRankings(s.weeklyData, SCHOOL_NAME);
 
-    /* State 2 \u2014 team was genuinely unranked all regular season. */
+    /* State 2 — team was genuinely unranked all regular season. */
     if (peakRank === null) {
       return `
         <div class="rankings-row">
@@ -1510,12 +1510,12 @@ function renderRankingsHistory(seasons) {
         </div>`;
     }
 
-    /* State 3 \u2014 ranked. Final rank: postseason if available, em-dash
+    /* State 3 — ranked. Final rank: postseason if available, em-dash
        if postseason fetch failed (don't substitute regular-season
-       lastRank \u2014 that would lie about a value we don't actually know). */
+       lastRank — that would lie about a value we don't actually know). */
     let displayFinal;
     if (s.finalFailed) {
-      displayFinal = null;          // \u2192 em-dash
+      displayFinal = null;          // → em-dash
     } else if (s.finalRank !== null) {
       displayFinal = s.finalRank;
     } else {
