@@ -1520,6 +1520,12 @@ body.is-home .page-content {
   font-size: 0.85rem;
 }
 
+.rankings-unavailable {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
 /* ----------------------------------------------------------
    Coaching History Table
    Full-width table listing all coaches from 1995–present.

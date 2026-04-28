@@ -1475,19 +1475,31 @@ function _extractAPRankings(weeklyData, school) {
    season (2023–2025). Each row shows peak rank, final rank,
    and weeks ranked. Unranked seasons show a clean label.
 
-   @param {Array} seasons — array of { year, weeklyData, finalRank }
-                           where weeklyData is the regular-season
-                           rankings array and finalRank is the
-                           postseason final rank (may be null)
+   @param {Array} seasons — array of
+       { year, weeklyData, regularFailed, finalRank, finalFailed }
+       where weeklyData is the regular-season rankings array (null
+       if the fetch failed), regularFailed is true when the regular-
+       rankings fetch rejected, finalRank is the postseason final
+       rank (null for a legitimately unranked team), and finalFailed
+       is true when the postseason fetch rejected.
    @returns {string} HTML string
    ---------------------------------------------------------- */
 function renderRankingsHistory(seasons) {
   const rows = seasons.map(function (s) {
+    /* State 1 \u2014 regular-rankings fetch failed, can't compute anything. */
+    if (s.regularFailed) {
+      return `
+        <div class="rankings-row">
+          <div class="rankings-row-year">${s.year}</div>
+          <div class="rankings-row-stats">
+            <span class="rankings-unavailable">Data unavailable</span>
+          </div>
+        </div>`;
+    }
+
     const { peakRank, weeksRanked, lastRank } = _extractAPRankings(s.weeklyData, SCHOOL_NAME);
 
-    /* Use postseason final rank if available, else last regular-season rank */
-    const displayFinal = s.finalRank !== null ? s.finalRank : lastRank;
-
+    /* State 2 \u2014 team was genuinely unranked all regular season. */
     if (peakRank === null) {
       return `
         <div class="rankings-row">
@@ -1496,6 +1508,18 @@ function renderRankingsHistory(seasons) {
             <span class="rankings-unranked">Unranked</span>
           </div>
         </div>`;
+    }
+
+    /* State 3 \u2014 ranked. Final rank: postseason if available, em-dash
+       if postseason fetch failed (don't substitute regular-season
+       lastRank \u2014 that would lie about a value we don't actually know). */
+    let displayFinal;
+    if (s.finalFailed) {
+      displayFinal = null;          // \u2192 em-dash
+    } else if (s.finalRank !== null) {
+      displayFinal = s.finalRank;
+    } else {
+      displayFinal = lastRank;      // unranked postseason: fall back to last regular rank (existing behavior)
     }
 
     return `
@@ -1948,10 +1972,15 @@ function renderLongTermRecord(yearEntries) {
    ---------------------------------------------------------- */
 async function _loadLongTermStrengthData() {
 
-  /* --- 1. Rankings History (2023, 2024, 2025) --- */
+  /* --- 1. Rankings History (2023, 2024, 2025) ---
+     Phase 17: allSettled instead of Promise.all so a single
+     fetch failure (e.g. CFBD burst rejection) doesn't tear
+     down the whole section. Per-season failure renders as
+     "Data unavailable" for that row only; the section-wide
+     fallback fires only if every fetch failed.            */
   (async function () {
     try {
-      const [reg2023, reg2024, reg2025, fin2023, fin2024, fin2025] = await Promise.all([
+      const settled = await Promise.allSettled([
         fetchRegularRankings(2023),
         fetchRegularRankings(2024),
         fetchRegularRankings(2025),
@@ -1960,12 +1989,27 @@ async function _loadLongTermStrengthData() {
         fetchFinalRank(SCHOOL_NAME, 2025),
       ]);
 
-      const seasons = [
-        { year: 2023, weeklyData: reg2023, finalRank: fin2023 },
-        { year: 2024, weeklyData: reg2024, finalRank: fin2024 },
-        { year: 2025, weeklyData: reg2025, finalRank: fin2025 },
-      ];
-      setSection('longterm-rankings', renderRankingsHistory(seasons));
+      const seasons = [2023, 2024, 2025].map(function (year, i) {
+        const reg = settled[i];
+        const fin = settled[i + 3];
+        return {
+          year,
+          weeklyData:    reg.status === 'fulfilled' ? reg.value : null,
+          regularFailed: reg.status !== 'fulfilled',
+          finalRank:     fin.status === 'fulfilled' ? fin.value : null,
+          finalFailed:   fin.status !== 'fulfilled',
+        };
+      });
+
+      // Section-wide fallback only if every fetch rejected.
+      const allFailed = seasons.every(function (s) {
+        return s.regularFailed && s.finalFailed;
+      });
+      if (allFailed) {
+        setSection('longterm-rankings', errorHTML('Rankings data unavailable.'));
+      } else {
+        setSection('longterm-rankings', renderRankingsHistory(seasons));
+      }
     } catch (e) {
       setSection('longterm-rankings', errorHTML('Rankings data unavailable.'));
     }

@@ -28,9 +28,77 @@ const CFBD_API_KEY = CFBD_CONFIG.apiKey;
 const _apiCache = {};
 const _24H = 24 * 3600 * 1000;
 
+/* =============================================================
+   Phase 17 — concurrency-limited queue + request deduplication
+
+   _CFBD_MAX_CONCURRENT caps simultaneous in-flight cfbdFetch
+   network calls. The live CloudFront test in Phase 17 prep
+   showed ~6–10 concurrent CFBD requests succeed before the
+   API begins dropping subsequent ones with no
+   Access-Control-Allow-Origin header (which the browser
+   surfaces as a generic CORS error). N=5 sits one below the
+   bottom of that observed range. Drop to 4 if rejections recur.
+
+   _inFlight dedupes simultaneous requests for the same URL.
+   When the Bowl History and 10-Year Record IIFEs both call
+   fetchSeasonRecord(school, 2024) concurrently, both hit
+   _cacheGet (miss) and would otherwise each enter the queue
+   and each fire an HTTP request. With dedup, the second
+   cfbdFetch call shares the first's in-flight promise —
+   one request, two awaiters.
+
+   Cleanup ordering: we use the explicit .then(h, h) form
+   rather than .finally so the value-preservation and
+   microtask sequence are unambiguous. The handler runs as
+   a microtask immediately after the queued fetch settles,
+   deletes the dedup entry, and re-emits the value (or
+   re-throws the error). A sibling cfbdFetch arriving in
+   the narrow window between handler-runs and wrapped-settles
+   sees an empty dedup map and fires fresh — one duplicate
+   HTTP request in a rare race, preferable to coupling
+   cfbdFetch to the cache layer.
+
+   Caveat: dedup keys on the exact URL string. Calls with
+   semantically identical params in different insertion order
+   will not dedupe (Object.entries preserves insertion order).
+   The named-fetch wrappers build params consistently, so the
+   targeted fetchSeasonRecord(school, year) overlap is covered.
+   ============================================================= */
+
+const _CFBD_MAX_CONCURRENT = 5;
+let   _running = 0;
+const _waiting = [];
+const _inFlight = new Map();   // url -> Promise<parsed JSON>
+
+function _drain() {
+  while (_running < _CFBD_MAX_CONCURRENT && _waiting.length > 0) {
+    _waiting.shift()();
+  }
+}
+
+function _enqueue(fn) {
+  return new Promise((resolve, reject) => {
+    const run = () => {
+      _running++;
+      fn().then(
+        v => { _running--; _drain(); resolve(v); },
+        e => { _running--; _drain(); reject(e); }
+      );
+    };
+    if (_running < _CFBD_MAX_CONCURRENT) run();
+    else _waiting.push(run);
+  });
+}
+
 /* ----------------------------------------------------------
    cfbdFetch
    Wraps the native fetch API for CFBD requests.
+
+   Phase 17: routed through the queue + dedup map declared
+   above. Cache hits in the named-fetch wrappers
+   (fetchSeasonRecord, fetchRegularRankings, etc.) bypass
+   this layer entirely — only actual network calls enter
+   the queue.
 
    @param {string} endpoint  — API path, e.g. '/teams' or '/games'
    @param {Object} params    — Query string parameters as key/value pairs
@@ -49,20 +117,38 @@ async function cfbdFetch(endpoint, params = {}) {
 
   const url = `${CFBD_BASE_URL}${endpoint}${query ? `?${query}` : ''}`;
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${CFBD_API_KEY}`,
-      'Accept': 'application/json',
-    },
+  // Dedup — identical URL already in flight, share that promise rather
+  // than burn a queue slot on a duplicate.
+  const existing = _inFlight.get(url);
+  if (existing) return existing;
+
+  // Queue the actual network call.
+  const queued = _enqueue(async () => {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${CFBD_API_KEY}`,
+        'Accept': 'application/json',
+      },
+    });
+    // Surface HTTP errors as thrown exceptions so callers can catch them
+    if (!response.ok) {
+      throw new Error(`CFBD API error: ${response.status} ${response.statusText} — ${url}`);
+    }
+    return response.json();
   });
 
-  // Surface HTTP errors as thrown exceptions so callers can catch them
-  if (!response.ok) {
-    throw new Error(`CFBD API error: ${response.status} ${response.statusText} — ${url}`);
-  }
+  // Explicit .then(handler, handler) over .finally for unambiguous
+  // ordering: handler runs as a microtask, deletes the dedup entry,
+  // then re-emits the original outcome. Wrapped promise adopts that
+  // outcome (value preserved on fulfill, error rethrown on reject).
+  const wrapped = queued.then(
+    v => { _inFlight.delete(url); return v; },
+    e => { _inFlight.delete(url); throw e; }
+  );
 
-  return response.json();
+  _inFlight.set(url, wrapped);
+  return wrapped;
 }
 
 /* ----------------------------------------------------------
