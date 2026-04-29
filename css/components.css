@@ -369,6 +369,28 @@ body.is-home .page-content {
   min-height: 130px;
 }
 
+/* ----------------------------------------------------------
+   Home Welcome (Phase 19)
+   Replaces the Top Games card body during offseason
+   (CURRENT_WEEK === null). Onboarding card for first-time
+   visitors. Uses existing CSS variables only — no new colors.
+   ---------------------------------------------------------- */
+.home-welcome {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  padding: 4px 0;
+}
+.home-welcome p {
+  margin: 0 0 12px 0;
+}
+.home-welcome p:last-child {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
 .home-card--cfp {
   grid-column: 3;
   grid-row: 2;

@@ -535,10 +535,18 @@ const HomePage = {
           <div class="home-list" id="section-top25">${loadingRows(10)}</div>
         </div>
 
-        <!-- Top Games of Week -->
+        <!-- Top Games of Week  OR  Welcome (offseason) -->
         <div class="home-card home-card--games">
-          <div class="home-card-title">Top Games \u2014 ${CURRENT_WEEK !== null ? `Week ${CURRENT_WEEK}, ${CURRENT_YEAR}` : `Offseason ${CURRENT_YEAR}`}</div>
-          <div class="home-list" id="section-games">${loadingRows(4)}</div>
+          ${CURRENT_WEEK !== null ? `
+            <div class="home-card-title">Top Games \u2014 Week ${CURRENT_WEEK}, ${CURRENT_YEAR}</div>
+            <div class="home-list" id="section-games">${loadingRows(4)}</div>
+          ` : `
+            <div class="home-card-title">Welcome to FieldIQ</div>
+            <div class="home-welcome">
+              <p>Explore 136 FBS programs \u2014 full analytics, schedules, and program history.</p>
+              <p>Click <strong>Schools</strong> in the sidebar or use the search bar in the top right.</p>
+            </div>
+          `}
         </div>
 
         <!-- CFB News Feed -->
@@ -547,12 +555,14 @@ const HomePage = {
           <div class="home-list" id="section-news">${loadingRows(6)}</div>
         </div>
 
-        <!-- History + Fast Facts — stacked column, grid slot col 2 / row 2 -->
+        <!-- History (live season only) + Fast Facts — stacked column, grid slot col 2 / row 2 -->
         <div class="home-card-col home-card-col--facts">
-          <div class="home-card home-card--fact">
-            <div class="home-card-title">This Week in CFB History</div>
-            <div id="section-fact">${loadingRows(1)}</div>
-          </div>
+          ${CURRENT_WEEK !== null ? `
+            <div class="home-card home-card--fact">
+              <div class="home-card-title">This Week in CFB History</div>
+              <div id="section-fact">${loadingRows(1)}</div>
+            </div>
+          ` : ''}
           <div class="home-card home-card--fastfacts">
             <div class="home-card-title">Did You Know?</div>
             <div id="section-fastfact">${renderFastFact()}</div>
@@ -587,7 +597,9 @@ const HomePage = {
           ? fetchGames(CURRENT_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' })
           : Promise.resolve([]),
         fetchESPNNews(),
-        fetchGames(HISTORY_YEAR, calWeek, 'regular', { classification: 'fbs' }),
+        CURRENT_WEEK !== null
+          ? fetchGames(HISTORY_YEAR, calWeek, 'regular', { classification: 'fbs' })
+          : Promise.resolve([]),
       ]);
 
     /* ----------------------------------------------------------
