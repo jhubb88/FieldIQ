@@ -1,0 +1,78 @@
+name: Weekly Prewarm
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'   # Sundays at 02:00 UTC
+  workflow_dispatch:       # manual "Run workflow" button in Actions tab
+
+# Prevent overlapping runs (e.g. a manual trigger firing while the scheduled
+# run is still in progress). Don't cancel an in-progress run — let it finish
+# and queue the new one.
+concurrency:
+  group: prewarm
+  cancel-in-progress: false
+
+permissions:
+  contents: write          # required for the auto-commit + push step below
+
+jobs:
+  prewarm:
+    name: Prewarm CFBD cache and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30    # ~17 min expected for full run; 30 leaves margin
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run prewarm script
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: node scripts/prewarm.js
+
+      - name: Commit regenerated cache files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cache/
+          if git diff --staged --quiet; then
+            echo "No cache changes to commit."
+          else
+            git commit -m "chore: weekly prewarm refresh [skip ci]"
+            git push
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync . s3://jimmy-fieldiq \
+            --exclude "config.js" \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude ".playwright-mcp/*" \
+            --exclude ".codex" \
+            --exclude "node_modules/*" \
+            --exclude "scripts/*" \
+            --exclude "*.tmp" \
+            --exclude "p17-*.png" \
+            --exclude "ohio-state-*.png" \
+            --exclude "screenshot-*.png" \
+            --exclude "*.pdf" \
+            --exclude "*.csv"
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"

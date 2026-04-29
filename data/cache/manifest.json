@@ -1,0 +1,710 @@
+{
+  "generatedAt": "2026-04-29T15:52:59.958Z",
+  "schoolCount": 136,
+  "forceFlag": false,
+  "schools": {
+    "alabama": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "arkansas": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "auburn": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "florida": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "georgia": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "kentucky": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "lsu": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "mississippi-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "missouri": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ole-miss": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "oklahoma": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "south-carolina": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "tennessee": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "texas": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "texas-am": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "vanderbilt": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "illinois": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "indiana": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "iowa": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "maryland": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "michigan": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "michigan-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "minnesota": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "nebraska": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "northwestern": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ohio-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "oregon": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "oregon-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "penn-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "purdue": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "rutgers": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "usc": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ucla": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "washington": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "washington-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "wisconsin": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "arizona": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "arizona-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "baylor": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "byu": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "cincinnati": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "colorado": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "houston": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "iowa-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "kansas": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "kansas-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "oklahoma-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "tcu": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "texas-tech": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ucf": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "utah": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "west-virginia": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "boston-college": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "california": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "clemson": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "duke": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "florida-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "georgia-tech": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "louisville": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "miami-fl": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "nc-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "north-carolina": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "pittsburgh": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "smu": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "stanford": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "syracuse": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "virginia": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "virginia-tech": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "wake-forest": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "army": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "charlotte": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "east-carolina": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "florida-atlantic": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "memphis": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "navy": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "north-texas": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "rice": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "south-florida": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "temple": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "tulane": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "tulsa": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "utsa": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "uab": {
+      "written": 15,
+      "skipped": 17,
+      "failed": 0
+    },
+    "air-force": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "boise-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "colorado-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "fresno-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "hawaii": {
+      "written": 0,
+      "skipped": 31,
+      "failed": 0
+    },
+    "nevada": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "new-mexico": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "san-diego-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "san-jose-state": {
+      "written": 0,
+      "skipped": 31,
+      "failed": 0
+    },
+    "unlv": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "utah-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "wyoming": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "appalachian-state": {
+      "written": 0,
+      "skipped": 31,
+      "failed": 0
+    },
+    "arkansas-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "coastal-carolina": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "georgia-southern": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "georgia-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "james-madison": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "louisiana": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "louisiana-monroe": {
+      "written": 0,
+      "skipped": 31,
+      "failed": 0
+    },
+    "marshall": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "old-dominion": {
+      "written": 16,
+      "skipped": 16,
+      "failed": 0
+    },
+    "south-alabama": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "southern-miss": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "texas-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "troy": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "akron": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ball-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "bowling-green": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "buffalo": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "central-michigan": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "eastern-michigan": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "kent-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "miami-oh": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "northern-illinois": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "ohio": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "toledo": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "umass": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "western-michigan": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "delaware": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "fiu": {
+      "written": 0,
+      "skipped": 31,
+      "failed": 0
+    },
+    "jacksonville-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "kennesaw-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "liberty": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "louisiana-tech": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "middle-tennessee": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "missouri-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "new-mexico-state": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "sam-houston": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "utep": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "western-kentucky": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "notre-dame": {
+      "written": 17,
+      "skipped": 15,
+      "failed": 0
+    },
+    "uconn": {
+      "written": 16,
+      "skipped": 16,
+      "failed": 0
+    }
+  },
+  "shared": {
+    "teamsFBS": "ok",
+    "regularRankings_2023": "ok",
+    "regularRankings_2024": "ok",
+    "regularRankings_2025": "ok",
+    "finalRankSource_2023": "ok",
+    "finalRankSource_2024": "ok",
+    "finalRankSource_2025": "ok",
+    "finalRanksDerived": 408
+  },
+  "summary": {
+    "totalSchools": 136,
+    "schoolsClean": 136,
+    "schoolsWithFailures": 0,
+    "totalEndpointWrites": 2223,
+    "totalEndpointSkipped": 2124,
+    "totalEndpointFailed": 0,
+    "sharedFailures": 0,
+    "totalCfbdAttempts": 3290,
+    "durationMs": 1816930
+  },
+  "totalCfbdCalls": 3290,
+  "durationMs": 1816930
+}
