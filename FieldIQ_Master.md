@@ -1,6 +1,6 @@
 # FieldIQ — Master Reference Document
 *Upload this ONE file to the FieldIQ Projects page. Replace it only when major decisions change.*
-*Last updated: Phase 18 complete. Static cache prewarm shipped — all 136 FBS schools served from /data/cache/ first, falling through to Phase 16 localStorage and Phase 17 throttled live CFBD as fallbacks. Weekly auto-refresh wired via GitHub Actions.*
+*Last updated: Phase 19 complete. Homepage offseason onboarding shipped — Welcome card replaces empty Top Games during offseason; broken "Week 18, 2013" history empty-state hidden when CURRENT_WEEK is null. Phase 18 static-cache architecture intact.*
 
 ---
 
@@ -354,6 +354,7 @@ Contradictory pairs that can never coexist:
 | 16 | Caching Persistence (localStorage) | ✅ Complete |
 | 17 | Concurrency-Limited Queue + Request Dedup + Rankings allSettled | ✅ Complete |
 | 18 | Static Cache Prewarm + Weekly GitHub Actions Refresh | ✅ Complete |
+| 19 | Homepage Offseason Onboarding + History Empty-State Fix | ✅ Complete |
 
 ### Phase 15 — What Was Built (commit d669261)
 
@@ -368,6 +369,17 @@ Contradictory pairs that can never coexist:
 - league.js script tag added (`index.html`)
 - Stacked column layout for history/facts column (`css/components.css`)
 - --color-positive / --color-negative tokens added (`css/variables.css`)
+
+### Phase 19 — What Was Built (commit c4aa078)
+
+- Top Games card on the homepage replaced with a **Welcome to FieldIQ** card during offseason (`CURRENT_WEEK === null`). Onboarding copy directs first-time visitors to Schools nav and the search bar in the top right.
+- "This Week in CFB History" card hidden entirely during offseason — Fast Facts card naturally fills the column via existing `flex: 1` rule on `.home-card-col--facts .home-card`. No CSS layout change needed.
+- History fetch (`fetchGames(HISTORY_YEAR, calWeek, 'regular', { classification: 'fbs' })`) skipped when `CURRENT_WEEK === null` — saves one CFBD call per offseason cold load.
+- New `.home-welcome` CSS rule in `css/components.css` — uses existing variables (`--font-serif`, `--text-primary`, `--text-secondary`); zero new colors.
+- Empty-state bug eliminated: no more "No games found for Week 18, 2013" (Week 18 doesn't exist; the section was attempting an impossible fetch when calendar week landed outside football season).
+- When `CURRENT_WEEK` is set to an integer for the new season, both Top Games and History cards reappear automatically — no further code change needed.
+- Files touched: `pages/home.js` (3 edits), `css/components.css` (1 insertion).
+- Files NOT touched: `js/api.js`, `pages/league.js`, `pages/school.js`, `renderGames`, `renderHistory`, `setSection`, `getCalendarWeek`, `FAST_FACTS`.
 
 ### Phase 18 — What Was Built (commit 7d29e75)
 
@@ -451,7 +463,7 @@ Contradictory pairs that can never coexist:
 | Coaching data stale — 2025 carousel | ✅ Fixed in Phase 14b — 28 schools patched with coachOverride in schools.json. _deriveIdentity and renderCoachingContinuity both check override before CFBD. |
 | Season data stale — analytics on 2024 | ✅ Fixed in Phase 14a — CURRENT_YEAR rolled to 2025. All analytics, banners, and labels now reflect 2025 season. |
 | Homepage constants offseason update | ✅ Fixed in Phase 14a — CURRENT_WEEK = null offseason sentinel. Top Games section handles null gracefully. |
-| Top Games offseason dead space | Top Games section shows a large empty card during offseason when CURRENT_WEEK = null. Should collapse entirely rather than showing an empty shell. Flag for future polish pass. |
+| Top Games offseason dead space | ✅ Resolved in Phase 19. Replaced with a Welcome to FieldIQ onboarding card during offseason (CURRENT_WEEK === null). The broken "No games found for Week 18, 2013" history empty-state was also fixed in the same phase by hiding the History card during offseason. |
 | Conf. Championships data gap | CFBD /coaches endpoint does not return reliable conference championship data. Column dropped from coaching history table. Best AP Rank used instead. Deferred indefinitely. |
 | Record vs Ranked skipping | CFBD doesn't reliably embed rank in team-filtered game queries. Needs separate /rankings fetch cross-referenced by week. Deferred — not worth API budget now. |
 | JSDoc `@.cache/node-gyp` paths | Recurring CC issue — always clean before writing any file to disk. |
