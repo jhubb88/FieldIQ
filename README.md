@@ -2,7 +2,7 @@
 
 College football analytics dashboard — program-level data, nine analytical lenses, zero framework overhead.
 
-**Live demo:** https://d1q3x6tsvbllgg.cloudfront.net
+**Live demo:** https://fieldiq.jimmyhubbard2.cc
 
 ## Overview
 
