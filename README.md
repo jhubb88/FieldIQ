@@ -50,21 +50,12 @@ Open `http://localhost:8770` in a browser. A CFBD API key configured in a local 
 
 ## Deployment
 
-Deployed manually to AWS S3 + CloudFront. There is no CI/CD workflow — deploy and invalidate by hand:
+Deployed via GitHub Actions ([`.github/workflows/prewarm.yml`](.github/workflows/prewarm.yml)) in two modes:
 
-```bash
-# Sync to S3 (excludes local config and .git)
-aws s3 sync . s3://jimmy-fieldiq \
-  --profile portfolio-user \
-  --exclude "config.js" \
-  --exclude ".git/*"
+- **Push to `main`** — fast deploy-only path (~1 min). Skips the CFBD cache prewarm and the auto-commit step; just syncs the working tree to S3 and invalidates CloudFront. Triggered automatically on every push.
+- **Sunday 02:00 UTC schedule + manual `workflow_dispatch`** — full pipeline (~17 min). Runs the CFBD cache prewarm, auto-commits the refreshed `data/cache/` with `[skip ci]`, then deploys.
 
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation \
-  --distribution-id E12Z80TRB0P2XR \
-  --paths "/*" \
-  --profile portfolio-user
-```
+The S3 sync uses `aws s3 sync . s3://jimmy-fieldiq --delete` with excludes for `config.js`, build/scratch directories, docs, and binary artifacts. `config.js` (CFBD API key) is uploaded to S3 manually and excluded from the workflow's sync so deploys don't overwrite it. CloudFront cache is invalidated with `--paths "/*"`.
 
 **S3 bucket:** `jimmy-fieldiq` (us-east-1)  
 **CloudFront distribution:** `E12Z80TRB0P2XR`
@@ -100,7 +91,6 @@ FieldIQ/
 
 - CFP poll fallback: CFBD does not always return the CFP committee poll by its exact name for all weeks; the CFP card falls back to AP Top 25 when the poll is absent.
 - Top Games at week 15 (conference championship week): `homeRank`/`awayRank` fields are not populated in CFBD game records for this week; the card falls back to highest-scoring games.
-- No CI/CD: deployment is manual. GitHub Actions workflow is a planned addition.
 
 ## License
 
