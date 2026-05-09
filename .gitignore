@@ -3,3 +3,10 @@ node_modules/
 .env
 .cache
 config.js
+
+# Documentation, screenshots, and data exports - not deploy inputs
+*.pdf
+*.csv
+ohio-state-*.png
+p17-*.png
+screenshot-*.png
