@@ -5,7 +5,7 @@
    Exposes: cfbdFetch(endpoint, params)
             fetchRankings(year, seasonType)
             fetchGames(year, week, seasonType)
-            fetchESPNNews()
+            fetchSPRatings(year)
    Depends on: nothing (no other FieldIQ modules required)
 
    College Football Data API docs: https://api.collegefootballdata.com/api/docs
@@ -195,47 +195,6 @@ async function fetchGames(year, week, seasonType = 'regular', options = {}) {
   const data = await cfbdFetch('/games', { year, week, seasonType, ...options });
   _cacheSet(key, data, _24H);
   return data;
-}
-
-/* ----------------------------------------------------------
-   fetchESPNNews
-   Fetches the ESPN college football RSS feed through the
-   allorigins.win CORS proxy (required for file:// and
-   cross-origin browser environments).
-
-   Parses the XML response and returns an array of article
-   objects with title, pubDate (raw string), and link.
-
-   @returns {Promise<Array<{title, pubDate, link}>>}
-   ---------------------------------------------------------- */
-async function fetchESPNNews() {
-  const key = 'espnNews';
-  const cached = _cacheGet(key);
-  if (cached !== undefined) return cached;
-
-  const ESPN_RSS_URL = 'https://www.espn.com/espn/rss/ncf/news';
-  // rss2json.com converts RSS to JSON and handles CORS — no XML parsing needed
-  const RSS2JSON_URL = 'https://api.rss2json.com/v1/api.json?rss_url=';
-
-  const response = await fetch(`${RSS2JSON_URL}${encodeURIComponent(ESPN_RSS_URL)}`);
-  if (!response.ok) {
-    throw new Error(`ESPN news fetch error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-
-  if (data.status !== 'ok' || !Array.isArray(data.items)) {
-    throw new Error(`ESPN news parse error: ${data.message || 'unexpected response'}`);
-  }
-
-  const result = data.items.map(item => ({
-    title:   item.title   || '(No title)',
-    pubDate: item.pubDate || '',
-    link:    item.link    || '',
-  }));
-
-  _cacheSet(key, result, 30 * 60 * 1000); // 30 min — news should refresh
-  return result;
 }
 
 /* =============================================================
@@ -600,6 +559,30 @@ async function fetchRegularRankings(year) {
   const cached = _cacheGet(key);
   if (cached !== undefined) return cached;
   const data = await cfbdFetch('/rankings', { year, seasonType: 'regular' });
+  _cacheSet(key, data, null); // cache indefinitely
+  return data;
+}
+
+/* ----------------------------------------------------------
+   fetchSPRatings
+   Returns CFBD SP+ ratings for teams in a given season.
+   Each entry includes offense.{rating, ranking} and
+   defense.{rating, ranking} pre-computed by CFBD.
+
+   Cached indefinitely — past-season SP+ ratings are finalized
+   once the season closes.
+
+   @param {number} year — e.g. 2025
+   @returns {Promise<Array>}
+   ---------------------------------------------------------- */
+async function fetchSPRatings(year) {
+  const staticData = await _tryStaticCache(`_shared/spRatings_${year}.json`);
+  if (staticData !== undefined) return staticData;
+
+  const key = `spRatings:${year}`;
+  const cached = _cacheGet(key);
+  if (cached !== undefined) return cached;
+  const data = await cfbdFetch('/ratings/sp', { year });
   _cacheSet(key, data, null); // cache indefinitely
   return data;
 }
