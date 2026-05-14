@@ -3,7 +3,7 @@
 /* =============================================================
    pages/home.js — FieldIQ Home Page
    Exposes: HomePage.render(), HomePage.unmount()
-   Depends on: api.js (fetchRankings, fetchGames, fetchESPNNews)
+   Depends on: api.js (fetchRankings, fetchGames, fetchSPRatings)
    Theme: neutral only — resetTheme() called by router before render.
    ============================================================= */
 
@@ -50,29 +50,6 @@ function buildMosaicTiles() {
     html += `<div class="mosaic-tile" style="background-color:${bg}">${abbr}</div>`;
   }
   return html;
-}
-
-/* ----------------------------------------------------------
-   timeAgo
-   Converts an RFC 2822 date string (from RSS pubDate) into
-   a human-readable relative time: "2h ago", "3d ago", etc.
-   Falls back to the raw date string if parsing fails.
-   ---------------------------------------------------------- */
-function timeAgo(dateStr) {
-  if (!dateStr) return '';
-  const normalized = dateStr.includes('T') || dateStr.endsWith('Z')
-    ? dateStr
-    : dateStr.replace(' ', 'T') + 'Z';
-  const then = new Date(normalized);
-  if (isNaN(then)) return dateStr;
-  const diffMs  = Date.now() - then.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1)   return 'just now';
-  if (diffMin < 60)  return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr  < 24)  return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  return `${diffDay}d ago`;
 }
 
 /* ----------------------------------------------------------
@@ -252,23 +229,29 @@ function renderGames(gamesData) {
 }
 
 /* ----------------------------------------------------------
-   renderNews
-   Receives array of {title, pubDate, link} from ESPN RSS.
-   Displays up to 10 most recent items.
+   renderSPRatings
+   Receives the /ratings/sp response array plus a side
+   ('offense' or 'defense'). Sorts by ${side}.ranking ascending,
+   slices the top 10, and returns rows in the same shape as
+   renderTop25 — rank number, school link, conference.
    ---------------------------------------------------------- */
-function renderNews(newsItems) {
-  if (!newsItems.length) {
-    return errorHTML('No news items returned.');
+function renderSPRatings(ratings, side) {
+  if (!Array.isArray(ratings) || ratings.length === 0) {
+    return errorHTML('No SP+ data returned.');
   }
 
-  return newsItems.slice(0, 10).map(n => `
-    <div class="home-list-row" style="flex-direction:column;align-items:flex-start;gap:3px">
-      <span class="home-list-label" style="white-space:normal;font-size:0.8rem;line-height:1.35">
-        ${n.title}
-      </span>
-      <span class="home-list-meta">${timeAgo(n.pubDate)}</span>
-    </div>
-  `).join('');
+  return ratings
+    .slice()
+    .filter(t => t[side] && t[side].ranking != null)
+    .sort((a, b) => a[side].ranking - b[side].ranking)
+    .slice(0, 10)
+    .map(t => `
+      <div class="home-list-row">
+        <span class="home-list-rank">${t[side].ranking}</span>
+        <span class="home-list-label">${_schoolLink(t.team)}</span>
+        ${t.conference ? `<span class="home-list-meta">${t.conference}</span>` : ''}
+      </div>
+    `).join('');
 }
 
 /* ----------------------------------------------------------
@@ -549,10 +532,12 @@ const HomePage = {
           `}
         </div>
 
-        <!-- CFB News Feed -->
+        <!-- SP+ Top 10 Offenses / Defenses -->
         <div class="home-card home-card--news">
-          <div class="home-card-title">CFB News</div>
-          <div class="home-list" id="section-news">${loadingRows(6)}</div>
+          <div class="home-card-title">TOP 10 OFFENSES (${CURRENT_YEAR - 1} SP+)</div>
+          <div class="home-list" id="section-sp-offense">${loadingRows(10)}</div>
+          <div class="home-card-title">TOP 10 DEFENSES (${CURRENT_YEAR - 1} SP+)</div>
+          <div class="home-list" id="section-sp-defense">${loadingRows(10)}</div>
         </div>
 
         <!-- History (live season only) + Fast Facts — stacked column, grid slot col 2 / row 2 -->
@@ -590,13 +575,13 @@ const HomePage = {
        Independent of CURRENT_WEEK, which is the live-season sentinel. */
     const calWeek = getCalendarWeek();
 
-    const [rankingsResult, gamesResult, newsResult, historyResult] =
+    const [rankingsResult, gamesResult, spRatingsResult, historyResult] =
       await Promise.allSettled([
         fetchRankings(CURRENT_YEAR, 'regular'),
         CURRENT_WEEK !== null
           ? fetchGames(CURRENT_YEAR, CURRENT_WEEK, 'regular', { classification: 'fbs' })
           : Promise.resolve([]),
-        fetchESPNNews(),
+        fetchSPRatings(CURRENT_YEAR - 1), // SP+ for last completed season
         CURRENT_WEEK !== null
           ? fetchGames(HISTORY_YEAR, calWeek, 'regular', { classification: 'fbs' })
           : Promise.resolve([]),
@@ -641,11 +626,14 @@ const HomePage = {
       setSection('section-games', errorHTML(gamesResult.reason?.message || 'Fetch failed'));
     }
 
-    /* CFB News */
-    if (newsResult.status === 'fulfilled') {
-      setSection('section-news', renderNews(newsResult.value));
+    /* SP+ Top 10 Offenses / Defenses */
+    if (spRatingsResult.status === 'fulfilled') {
+      setSection('section-sp-offense', renderSPRatings(spRatingsResult.value, 'offense'));
+      setSection('section-sp-defense', renderSPRatings(spRatingsResult.value, 'defense'));
     } else {
-      setSection('section-news', errorHTML(newsResult.reason?.message || 'Fetch failed'));
+      const msg = spRatingsResult.reason?.message || 'Fetch failed';
+      setSection('section-sp-offense', errorHTML(msg));
+      setSection('section-sp-defense', errorHTML(msg));
     }
 
     /* CFB History */
