@@ -28,7 +28,7 @@ FieldIQ/
 │   └── components.css  # Cards, nav, chips, badges, homepage components
 ├── js/
 │   ├── theme.js        # applyTheme(), restoreTheme(), resetTheme()
-│   ├── api.js          # cfbdFetch(), fetchRankings(), fetchGames(), fetchESPNNews()
+│   ├── api.js          # cfbdFetch(), fetchRankings(), fetchGames(), fetchSPRatings()
 │   ├── router.js       # Hash router, navigate(), initRouter()
 │   └── app.js          # Entry point — init, sidebar nav, DOMContentLoaded
 ├── pages/
@@ -70,7 +70,7 @@ FieldIQ/
 - All 5 sections wired to real data sources
 - `fetchRankings(year, seasonType)` → CFBD `/rankings`
 - `fetchGames(year, week, seasonType, options)` → CFBD `/games`
-- `fetchESPNNews()` → ESPN RSS via rss2json.com (handles CORS)
+- `fetchSPRatings(year)` → CFBD /ratings/sp endpoint, cached forever for closed seasons
 - `CURRENT_YEAR = 2024` / `CURRENT_WEEK = 15` constants at top of `home.js`
 - `HISTORY_YEAR = 2013` for "This Week in History" section
 - `Promise.allSettled` fires all fetches concurrently
@@ -78,7 +78,6 @@ FieldIQ/
 - CFP poll falls back to AP Top 25 if CFP data absent (early season)
 - Rankings sorted by rank (API returns unordered)
 - Games filtered to `classification: fbs` to exclude FCS/DIII
-- `timeAgo()` normalizes rss2json UTC dates correctly
 
 ---
 

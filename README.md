@@ -71,7 +71,7 @@ FieldIQ/
 │   ├── layout.css          # App shell, sidebar, topbar, page-content
 │   └── components.css      # Cards, nav, chips, badges, section components
 ├── js/
-│   ├── api.js              # cfbdFetch(), fetchRankings(), fetchGames(), fetchESPNNews()
+│   ├── api.js              # cfbdFetch(), fetchRankings(), fetchGames(), fetchSPRatings()
 │   ├── app.js              # Entry point — sidebar, init sequence
 │   ├── router.js           # Hash router, navigate(), hashchange listener
 │   ├── theme.js            # applyTheme(), restoreTheme(), resetTheme()
