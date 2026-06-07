@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T06:25:43.299Z",
+  "generatedAt": "2026-06-07T06:36:17.924Z",
   "schoolCount": 136,
   "forceFlag": false,
   "schools": {
@@ -703,8 +703,8 @@
     "totalEndpointFailed": 0,
     "sharedFailures": 0,
     "totalCfbdAttempts": 3290,
-    "durationMs": 1437507
+    "durationMs": 1405737
   },
   "totalCfbdCalls": 3290,
-  "durationMs": 1437507
+  "durationMs": 1405737
 }
